@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to nextcord
-===========================
+Welcome to the nextcord docs
+=============================
 
 .. image:: /images/snake.svg
 .. image:: /images/snake_dark.svg
@@ -30,7 +30,7 @@ Is this your first time using the library? This is the place to get started!
 - **Working with Nextcord:** :doc:`discord` | :doc:`intents`
 - **Migrating from discord.py**: :ref:`Migrating to nextcord <migrating_nextcord>`
 - **Examples:** Many examples are available in the :resource:`repository <examples>`.
-- **Interaction Commands:** :doc:`/client/index`
+- **Interaction Commands:** :doc:`/interactions`
 
 Getting help
 --------------
