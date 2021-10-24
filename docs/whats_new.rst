@@ -5,8 +5,8 @@
 
 .. _whats_new:
 
-Changelog
-============
+The NextCord Update Changelog
+==============================
 
 This page keeps a detailed human-friendly rendering of what's new and changed
 in specific versions.
@@ -41,7 +41,7 @@ Working Interaction commands
 
 Working Selects
 
-Simple Voice recording
+Simple Voice recording < Remove If Not Merged By Launch
 
 Docs for Selects And Interaction commands
 
@@ -54,8 +54,6 @@ Add Guild.bots And Guild.Humans
 Added A on_raw_typing Event
 
 Make supressing users in a VC throw better errors
-
-Sped Up Aiohttp
 
 Removed
 ~~~~~~~
