@@ -79,5 +79,4 @@ If you're looking for something related to the project itself, it's here.
   migrating
   migrating_2
   migrating_to_nextcord
-  client/index
   interactions
