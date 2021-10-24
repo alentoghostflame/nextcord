@@ -20,12 +20,13 @@ Bug Fixes
 Fixed The Create_Sticker glitch
 Fixed RTD String Error
 
-
 Additions
 ~~~~~~~~~~
 Working Interaction commands
 
 Working Selects
+
+Simple Voice recording
 
 Docs for Selects And Interaction commands
 
