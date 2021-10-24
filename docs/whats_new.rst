@@ -24,13 +24,16 @@ Bug Fixes
 Additions
 ~~~~~~~~~~
 Working Interaction commands
-Working Selects and Buttons
-Docs for Buttons, Selects And Interaction commands
+
+Working Selects
+
+Docs for Selects And Interaction commands
+
 API Docs for Interaction commands
 
 
 
-.. _vp1p7p3:
+.. _vp2p0p0:
 
 v1.7.3
 --------
