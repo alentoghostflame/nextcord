@@ -67,7 +67,7 @@ secrets: dict
     join: str (max: 128)
     spectate: str (max: 128)
 instance: bool
-application_id: str
+app_id: str
 name: str (max: 128)
 url: str
 type: int
@@ -151,8 +151,8 @@ class Activity(BaseActivity):
 
     Attributes
     ------------
-    application_id: Optional[:class:`int`]
-        The application ID of the game.
+    app_id: Optional[:class:`int`]
+        The app ID of the game.
     name: Optional[:class:`str`]
         The name of the activity.
     url: Optional[:class:`str`]
@@ -211,7 +211,7 @@ class Activity(BaseActivity):
         'type',
         'name',
         'url',
-        'application_id',
+        'app_id',
         'emoji',
         'buttons',
     )
@@ -223,7 +223,7 @@ class Activity(BaseActivity):
         self.timestamps: ActivityTimestamps = kwargs.pop('timestamps', {})
         self.assets: ActivityAssets = kwargs.pop('assets', {})
         self.party: ActivityParty = kwargs.pop('party', {})
-        self.application_id: Optional[int] = _get_as_snowflake(kwargs, 'application_id')
+        self.app_id: Optional[int] = _get_as_snowflake(kwargs, 'app_id')
         self.name: Optional[str] = kwargs.pop('name', None)
         self.url: Optional[str] = kwargs.pop('url', None)
         self.flags: int = kwargs.pop('flags', 0)
@@ -245,7 +245,7 @@ class Activity(BaseActivity):
             ('name', self.name),
             ('url', self.url),
             ('details', self.details),
-            ('application_id', self.application_id),
+            ('app_id', self.app_id),
             ('session_id', self.session_id),
             ('emoji', self.emoji),
         )
@@ -291,7 +291,7 @@ class Activity(BaseActivity):
     @property
     def large_image_url(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity if applicable."""
-        if self.application_id is None:
+        if self.app_id is None:
             return None
 
         try:
@@ -299,12 +299,12 @@ class Activity(BaseActivity):
         except KeyError:
             return None
         else:
-            return Asset.BASE + f'/app-assets/{self.application_id}/{large_image}.png'
+            return Asset.BASE + f'/app-assets/{self.app_id}/{large_image}.png'
 
     @property
     def small_image_url(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity if applicable."""
-        if self.application_id is None:
+        if self.app_id is None:
             return None
 
         try:
@@ -312,7 +312,7 @@ class Activity(BaseActivity):
         except KeyError:
             return None
         else:
-            return Asset.BASE + f'/app-assets/{self.application_id}/{small_image}.png'
+            return Asset.BASE + f'/app-assets/{self.app_id}/{small_image}.png'
 
     @property
     def large_image_text(self) -> Optional[str]:
@@ -821,7 +821,7 @@ def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
 
     game_type = try_enum(ActivityType, data.get('type', -1))
     if game_type is ActivityType.playing:
-        if 'application_id' in data or 'session_id' in data:
+        if 'app_id' in data or 'session_id' in data:
             return Activity(**data)
         return Game(**data)
     elif game_type is ActivityType.custom:

@@ -46,70 +46,70 @@ __all__ = (
 
 
 class AppInfo:
-    """Represents the application info for the bot provided by Discord.
+    """Represents the app info for the bot provided by Discord.
 
 
     Attributes
     -------------
     id: :class:`int`
-        The application ID.
+        The app ID.
     name: :class:`str`
-        The application name.
+        The app name.
     owner: :class:`User`
-        The application owner.
+        The app owner.
     team: Optional[:class:`Team`]
-        The application's team.
+        The app's team.
 
         .. versionadded:: 1.3
 
     description: :class:`str`
-        The application description.
+        The app description.
     bot_public: :class:`bool`
         Whether the bot can be invited by anyone or if it is locked
-        to the application owner.
+        to the app owner.
     bot_require_code_grant: :class:`bool`
         Whether the bot requires the completion of the full oauth2 code
         grant flow to join.
     rpc_origins: Optional[List[:class:`str`]]
         A list of RPC origin URLs, if RPC is enabled.
     summary: :class:`str`
-        If this application is a game sold on Discord,
+        If this app is a game sold on Discord,
         this field will be the summary field for the store page of its primary SKU.
 
         .. versionadded:: 1.3
 
     verify_key: :class:`str`
-        The hex encoded key for verification in interactions and the
-        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
+        The hex encoded key for verification in inters and the
+        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/apps#getticket>`_.
 
         .. versionadded:: 1.3
 
     guild_id: Optional[:class:`int`]
-        If this application is a game sold on Discord,
+        If this app is a game sold on Discord,
         this field will be the guild to which it has been linked to.
 
         .. versionadded:: 1.3
 
     primary_sku_id: Optional[:class:`int`]
-        If this application is a game sold on Discord,
+        If this app is a game sold on Discord,
         this field will be the id of the "Game SKU" that is created,
         if it exists.
 
         .. versionadded:: 1.3
 
     slug: Optional[:class:`str`]
-        If this application is a game sold on Discord,
+        If this app is a game sold on Discord,
         this field will be the URL slug that links to the store page.
 
         .. versionadded:: 1.3
 
     terms_of_service_url: Optional[:class:`str`]
-        The application's terms of service URL, if set.
+        The app's terms of service URL, if set.
 
         .. versionadded:: 2.0
 
     privacy_policy_url: Optional[:class:`str`]
-        The application's privacy policy URL, if set.
+        The app's privacy policy URL, if set.
 
         .. versionadded:: 2.0
     """
@@ -171,7 +171,7 @@ class AppInfo:
 
     @property
     def icon(self) -> Optional[Asset]:
-        """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
+        """Optional[:class:`.Asset`]: Retrieves the app's icon asset, if any."""
         if self._icon is None:
             return None
         return Asset._from_icon(self._state, self.id, self._icon, path='app')
@@ -180,7 +180,7 @@ class AppInfo:
     def cover_image(self) -> Optional[Asset]:
         """Optional[:class:`.Asset`]: Retrieves the cover image on a store embed, if any.
 
-        This is only available if the application is a game sold on Discord.
+        This is only available if the app is a game sold on Discord.
         """
         if self._cover_image is None:
             return None
@@ -188,7 +188,7 @@ class AppInfo:
 
     @property
     def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: If this application is a game sold on Discord,
+        """Optional[:class:`Guild`]: If this app is a game sold on Discord,
         this field will be the guild to which it has been linked
 
         .. versionadded:: 1.3
@@ -203,23 +203,23 @@ class PartialAppInfo:
     Attributes
     -------------
     id: :class:`int`
-        The application ID.
+        The app ID.
     name: :class:`str`
-        The application name.
+        The app name.
     description: :class:`str`
-        The application description.
+        The app description.
     rpc_origins: Optional[List[:class:`str`]]
         A list of RPC origin URLs, if RPC is enabled.
     summary: :class:`str`
-        If this application is a game sold on Discord,
+        If this app is a game sold on Discord,
         this field will be the summary field for the store page of its primary SKU.
     verify_key: :class:`str`
-        The hex encoded key for verification in interactions and the
-        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
+        The hex encoded key for verification in inters and the
+        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/apps#getticket>`_.
     terms_of_service_url: Optional[:class:`str`]
-        The application's terms of service URL, if set.
+        The app's terms of service URL, if set.
     privacy_policy_url: Optional[:class:`str`]
-        The application's privacy policy URL, if set.
+        The app's privacy policy URL, if set.
     """
 
     __slots__ = ('_state', 'id', 'name', 'description', 'rpc_origins', 'summary', 'verify_key', 'terms_of_service_url', 'privacy_policy_url', '_icon')
@@ -241,7 +241,7 @@ class PartialAppInfo:
 
     @property
     def icon(self) -> Optional[Asset]:
-        """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
+        """Optional[:class:`.Asset`]: Retrieves the app's icon asset, if any."""
         if self._icon is None:
             return None
         return Asset._from_icon(self._state, self.id, self._icon, path='app')

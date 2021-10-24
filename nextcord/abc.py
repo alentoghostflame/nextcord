@@ -560,7 +560,7 @@ class GuildChannel:
 
         # The current cases can be explained as:
         # Guild owner get all permissions -- no questions asked. Otherwise...
-        # The @everyone role gets the first application.
+        # The @everyone role gets the first app.
         # After that, the applied roles that the user has in the channel
         # (or otherwise) are then OR'd together.
         # After the role permissions are resolved, the member permissions
@@ -1035,7 +1035,7 @@ class GuildChannel:
         unique: bool = True,
         target_type: Optional[InviteTarget] = None,
         target_user: Optional[User] = None,
-        target_application_id: Optional[int] = None,
+        target_app_id: Optional[int] = None,
     ) -> Invite:
         """|coro|
 
@@ -1071,8 +1071,8 @@ class GuildChannel:
 
             .. versionadded:: 2.0
 
-        target_application_id:: Optional[:class:`int`]
-            The id of the embedded application for the invite, required if `target_type` is `TargetType.embedded_application`.
+        target_app_id:: Optional[:class:`int`]
+            The id of the embedded app for the invite, required if `target_type` is `TargetType.embedded_app`.
 
             .. versionadded:: 2.0
 
@@ -1099,7 +1099,7 @@ class GuildChannel:
             unique=unique,
             target_type=target_type.value if target_type else None,
             target_user_id=target_user.id if target_user else None,
-            target_application_id=target_application_id,
+            target_app_id=target_app_id,
         )
         return Invite.from_incomplete(data=data, state=self._state)
 

@@ -32,7 +32,7 @@ from .emoji import PartialEmoji
 from .embed import Embed
 from .channel import ChannelType
 from .components import Component
-from .interactions import MessageInteraction
+from .inters import MessageInter
 from .sticker import StickerItem
 
 
@@ -72,11 +72,11 @@ class MessageActivity(TypedDict):
     party_id: str
 
 
-class _MessageApplicationOptional(TypedDict, total=False):
+class _MessageAppOptional(TypedDict, total=False):
     cover_image: str
 
 
-class MessageApplication(_MessageApplicationOptional):
+class MessageApp(_MessageAppOptional):
     id: Snowflake
     description: str
     icon: Optional[str]
@@ -98,13 +98,13 @@ class _MessageOptional(TypedDict, total=False):
     nonce: Union[int, str]
     webhook_id: Snowflake
     activity: MessageActivity
-    application: MessageApplication
-    application_id: Snowflake
+    app: MessageApp
+    app_id: Snowflake
     message_reference: MessageReference
     flags: int
     sticker_items: List[StickerItem]
     referenced_message: Optional[Message]
-    interaction: MessageInteraction
+    inter: MessageInter
     components: List[Component]
 
 

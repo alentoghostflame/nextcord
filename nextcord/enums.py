@@ -52,10 +52,10 @@ __all__ = (
     'ComponentType',
     'ButtonStyle',
     'StagePrivacyLevel',
-    'InteractionType',
-    'InteractionResponseType',
-    'ApplicationCommandType',
-    'ApplicationCommandOptionType',
+    'InterType',
+    'InterResponseType',
+    'AppCommandType',
+    'AppCommandOptionType',
     'NSFWLevel',
 )
 
@@ -211,7 +211,7 @@ class MessageType(Enum):
     guild_discovery_grace_period_final_warning = 17
     thread_created = 18
     reply = 19
-    application_command = 20
+    app_command = 20
     thread_starter_message = 21
     guild_invite_reminder = 22
 
@@ -487,7 +487,7 @@ class TeamMembershipState(Enum):
 class WebhookType(Enum):
     incoming = 1
     channel_follower = 2
-    application = 3
+    app = 3
 
 
 class ExpireBehaviour(Enum):
@@ -523,16 +523,16 @@ class StickerFormatType(Enum):
 class InviteTarget(Enum):
     unknown = 0
     stream = 1
-    embedded_application = 2
+    embedded_app = 2
 
 
-class InteractionType(Enum):
+class InterType(Enum):
     ping = 1
-    application_command = 2
+    app_command = 2
     component = 3
 
 
-class InteractionResponseType(Enum):
+class InterResponseType(Enum):
     pong = 1
     # ack = 2 (deprecated)
     # channel_message = 3 (deprecated)
@@ -542,13 +542,13 @@ class InteractionResponseType(Enum):
     message_update = 7  # for components
 
 
-class ApplicationCommandType(Enum):
+class AppCommandType(Enum):
     chat_input = 1
     user = 2
     message = 3
 
 
-class ApplicationCommandOptionType(Enum):
+class AppCommandOptionType(Enum):
     sub_command = 1
     sub_command_group = 2
     string = 3

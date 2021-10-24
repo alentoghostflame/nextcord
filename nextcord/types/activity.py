@@ -105,7 +105,7 @@ class Activity(_BaseActivity, total=False):
     timestamps: ActivityTimestamps
     assets: ActivityAssets
     party: ActivityParty
-    application_id: Snowflake
+    app_id: Snowflake
     flags: int
     emoji: Optional[ActivityEmoji]
     secrets: ActivitySecrets

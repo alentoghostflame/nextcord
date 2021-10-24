@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 
-from ..interactions import Interaction
+from ..inters import Inter
 
 __all__ = (
     'Item',
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
 I = TypeVar('I', bound='Item')
 V = TypeVar('V', bound='View', covariant=True)
-ItemCallbackType = Callable[[Any, I, Interaction], Coroutine[Any, Any, Any]]
+ItemCallbackType = Callable[[Any, I, Inter], Coroutine[Any, Any, Any]]
 
 
 class Item(Generic[V]):
@@ -60,7 +60,7 @@ class Item(Generic[V]):
         self._row: Optional[int] = None
         self._rendered_row: Optional[int] = None
         # This works mostly well but there is a gotcha with
-        # the interaction with from_component, since that technically provides
+        # the inter with from_component, since that technically provides
         # a custom_id most dispatchable items would get this set to True even though
         # it might not be provided by the library user. However, this edge case doesn't
         # actually affect the intended purpose of this check because from_component is
@@ -73,7 +73,7 @@ class Item(Generic[V]):
     def refresh_component(self, component: Component) -> None:
         return None
 
-    def refresh_state(self, interaction: Interaction) -> None:
+    def refresh_state(self, inter: Inter) -> None:
         return None
 
     @classmethod
@@ -116,7 +116,7 @@ class Item(Generic[V]):
         """Optional[:class:`View`]: The underlying view for this item."""
         return self._view
 
-    async def callback(self, interaction: Interaction):
+    async def callback(self, inter: Inter):
         """|coro|
 
         The callback associated with this UI item.
@@ -125,7 +125,7 @@ class Item(Generic[V]):
 
         Parameters
         -----------
-        interaction: :class:`.Interaction`
-            The interaction that triggered this UI item.
+        inter: :class:`.Inter`
+            The inter that triggered this UI item.
         """
         pass

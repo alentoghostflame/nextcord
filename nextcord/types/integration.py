@@ -29,11 +29,11 @@ from .snowflake import Snowflake
 from .user import User
 
 
-class _IntegrationApplicationOptional(TypedDict, total=False):
+class _IntegrationAppOptional(TypedDict, total=False):
     bot: User
 
 
-class IntegrationApplication(_IntegrationApplicationOptional):
+class IntegrationApp(_IntegrationAppOptional):
     id: Snowflake
     name: str
     icon: Optional[str]
@@ -76,7 +76,7 @@ class StreamIntegration(BaseIntegration):
 
 
 class BotIntegration(BaseIntegration):
-    application: IntegrationApplication
+    app: IntegrationApp
 
 
 Integration = Union[BaseIntegration, StreamIntegration, BotIntegration]

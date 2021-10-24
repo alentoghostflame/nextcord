@@ -325,10 +325,10 @@ class BotBase(GroupMixin):
         this bot.
 
         If an :attr:`owner_id` is not set, it is fetched automatically
-        through the use of :meth:`~.Bot.application_info`.
+        through the use of :meth:`~.Bot.app_info`.
 
         .. versionchanged:: 1.3
-            The function also checks if the application is team-owned if
+            The function also checks if the app is team-owned if
             :attr:`owner_ids` is not set.
 
         Parameters
@@ -348,7 +348,7 @@ class BotBase(GroupMixin):
             return user.id in self.owner_ids
         else:
 
-            app = await self.application_info()  # type: ignore
+            app = await self.app_info()  # type: ignore
             if app.team:
                 self.owner_ids = ids = {m.id for m in app.team.members}
                 return user.id in ids
@@ -1093,11 +1093,11 @@ class Bot(BotBase, nextcord.command_client.CommandClient):
     owner_id: Optional[:class:`int`]
         The user ID that owns the bot. If this is not set and is then queried via
         :meth:`.is_owner` then it is fetched automatically using
-        :meth:`~.Bot.application_info`.
+        :meth:`~.Bot.app_info`.
     owner_ids: Optional[Collection[:class:`int`]]
         The user IDs that owns the bot. This is similar to :attr:`owner_id`.
-        If this is not set and the application is team based, then it is
-        fetched automatically using :meth:`~.Bot.application_info`.
+        If this is not set and the app is team based, then it is
+        fetched automatically using :meth:`~.Bot.app_info`.
         For performance reasons it is recommended to use a :class:`set`
         for the collection. You cannot set both ``owner_id`` and ``owner_ids``.
 

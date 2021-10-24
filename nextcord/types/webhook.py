@@ -63,7 +63,7 @@ class _FullWebhook(TypedDict, total=False):
     name: Optional[str]
     avatar: Optional[str]
     channel_id: Snowflake
-    application_id: Optional[Snowflake]
+    app_id: Optional[Snowflake]
 
 
 class Webhook(PartialWebhook, _FullWebhook):

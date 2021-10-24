@@ -120,7 +120,7 @@ class AsyncWebhookAdapter:
             self._locks[bucket] = lock = asyncio.Lock()
 
         if payload is not None:
-            headers['Content-Type'] = 'application/json'
+            headers['Content-Type'] = 'app/json'
             to_send = utils._to_json(payload)
 
         if auth_token is not None:
@@ -156,7 +156,7 @@ class AsyncWebhookAdapter:
                             response.status,
                         )
                         data = (await response.text(encoding='utf-8')) or None
-                        if data and response.headers['Content-Type'] == 'application/json':
+                        if data and response.headers['Content-Type'] == 'app/json':
                             data = json.loads(data)
 
                         remaining = response.headers.get('X-Ratelimit-Remaining')
@@ -341,9 +341,9 @@ class AsyncWebhookAdapter:
         route = Route('GET', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session=session)
 
-    def create_interaction_response(
+    def create_inter_response(
         self,
-        interaction_id: int,
+        inter_id: int,
         token: str,
         *,
         session: aiohttp.ClientSession,
@@ -359,16 +359,16 @@ class AsyncWebhookAdapter:
 
         route = Route(
             'POST',
-            '/interactions/{webhook_id}/{webhook_token}/callback',
-            webhook_id=interaction_id,
+            '/inters/{webhook_id}/{webhook_token}/callback',
+            webhook_id=inter_id,
             webhook_token=token,
         )
 
         return self.request(route, session=session, payload=payload)
 
-    def get_original_interaction_response(
+    def get_original_inter_response(
         self,
-        application_id: int,
+        app_id: int,
         token: str,
         *,
         session: aiohttp.ClientSession,
@@ -376,14 +376,14 @@ class AsyncWebhookAdapter:
         r = Route(
             'GET',
             '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
-            webhook_id=application_id,
+            webhook_id=app_id,
             webhook_token=token,
         )
         return self.request(r, session=session)
 
-    def edit_original_interaction_response(
+    def edit_original_inter_response(
         self,
-        application_id: int,
+        app_id: int,
         token: str,
         *,
         session: aiohttp.ClientSession,
@@ -394,14 +394,14 @@ class AsyncWebhookAdapter:
         r = Route(
             'PATCH',
             '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
-            webhook_id=application_id,
+            webhook_id=app_id,
             webhook_token=token,
         )
         return self.request(r, session, payload=payload, multipart=multipart, files=files)
 
-    def delete_original_interaction_response(
+    def delete_original_inter_response(
         self,
-        application_id: int,
+        app_id: int,
         token: str,
         *,
         session: aiohttp.ClientSession,
@@ -409,7 +409,7 @@ class AsyncWebhookAdapter:
         r = Route(
             'DELETE',
             '/webhooks/{webhook_id}/{wehook_token}/messages/@original',
-            webhook_id=application_id,
+            webhook_id=app_id,
             wehook_token=token,
         )
         return self.request(r, session=session)
@@ -495,7 +495,7 @@ def handle_message_parameters(
                     'name': 'file',
                     'value': file.fp,
                     'filename': file.filename,
-                    'content_type': 'application/octet-stream',
+                    'content_type': 'app/octet-stream',
                 }
             )
         else:
@@ -505,7 +505,7 @@ def handle_message_parameters(
                         'name': f'file{index}',
                         'value': file.fp,
                         'filename': file.filename,
-                        'content_type': 'application/octet-stream',
+                        'content_type': 'app/octet-stream',
                     }
                 )
 
@@ -1278,7 +1278,7 @@ class Webhook(BaseWebhook):
             Whether the server should wait before sending a response. This essentially
             means that the return type of this function changes from ``None`` to
             a :class:`WebhookMessage` if set to ``True``. If the type of webhook
-            is :attr:`WebhookType.application` then this is always set to ``True``.
+            is :attr:`WebhookType.app` then this is always set to ``True``.
         username: :class:`str`
             The username to send with this message. If no username is provided
             then the default username for the webhook is used.
@@ -1290,7 +1290,7 @@ class Webhook(BaseWebhook):
             Indicates if the message should be sent using text-to-speech.
         ephemeral: :class:`bool`
             Indicates if the message should only be visible to the user.
-            This is only available to :attr:`WebhookType.application` webhooks.
+            This is only available to :attr:`WebhookType.app` webhooks.
             If a view is sent with an ephemeral message and it has no timeout set
             then the timeout is set to 15 minutes.
 
@@ -1352,11 +1352,11 @@ class Webhook(BaseWebhook):
         if content is None:
             content = MISSING
 
-        application_webhook = self.type is WebhookType.application
-        if ephemeral and not application_webhook:
-            raise InvalidArgument('ephemeral messages can only be sent from application webhooks')
+        app_webhook = self.type is WebhookType.app
+        if ephemeral and not app_webhook:
+            raise InvalidArgument('ephemeral messages can only be sent from app webhooks')
 
-        if application_webhook:
+        if app_webhook:
             wait = True
 
         if view is not MISSING:

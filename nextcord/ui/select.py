@@ -31,7 +31,7 @@ from .item import Item, ItemCallbackType
 from ..enums import ComponentType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
-from ..interactions import Interaction
+from ..inters import Inter
 from ..utils import MISSING
 from ..components import (
     SelectOption,
@@ -46,8 +46,8 @@ __all__ = (
 if TYPE_CHECKING:
     from .view import View
     from ..types.components import SelectMenu as SelectMenuPayload
-    from ..types.interactions import (
-        ComponentInteractionData,
+    from ..types.inters import (
+        ComponentInterData,
     )
 
 S = TypeVar('S', bound='Select')
@@ -66,7 +66,7 @@ class Select(Item[V]):
     Parameters
     ------------
     custom_id: :class:`str`
-        The ID of the select menu that gets received during an interaction.
+        The ID of the select menu that gets received during an inter.
         If not given then one is generated for you.
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
@@ -125,7 +125,7 @@ class Select(Item[V]):
 
     @property
     def custom_id(self) -> str:
-        """:class:`str`: The ID of the select menu that gets received during an interaction."""
+        """:class:`str`: The ID of the select menu that gets received during an inter."""
         return self._underlying.custom_id
 
     @custom_id.setter
@@ -270,8 +270,8 @@ class Select(Item[V]):
     def refresh_component(self, component: SelectMenu) -> None:
         self._underlying = component
 
-    def refresh_state(self, interaction: Interaction) -> None:
-        data: ComponentInteractionData = interaction.data  # type: ignore
+    def refresh_state(self, inter: Inter) -> None:
+        data: ComponentInterData = inter.data  # type: ignore
         self._selected_values = data.get('values', [])
 
     @classmethod
@@ -308,7 +308,7 @@ def select(
 
     The function being decorated should have three parameters, ``self`` representing
     the :class:`nextcord.ui.View`, the :class:`nextcord.ui.Select` being pressed and
-    the :class:`nextcord.Interaction` you receive.
+    the :class:`nextcord.Inter` you receive.
 
     In order to get the selected items that the user has chosen within the callback
     use :attr:`Select.values`.
@@ -318,7 +318,7 @@ def select(
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
     custom_id: :class:`str`
-        The ID of the select menu that gets received during an interaction.
+        The ID of the select menu that gets received during an inter.
         It is recommended not to set this parameter to prevent conflicts.
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5

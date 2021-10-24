@@ -79,7 +79,7 @@ class ReactionClearEmojiEvent(_ReactionClearEmojiEventOptional):
 
 
 class _IntegrationDeleteEventOptional(TypedDict, total=False):
-    application_id: Snowflake
+    app_id: Snowflake
 
 
 class IntegrationDeleteEvent(_IntegrationDeleteEventOptional):

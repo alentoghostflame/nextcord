@@ -105,7 +105,7 @@ class _AuditLogChange_Snowflake(TypedDict):
         'public_updates_channel_id',
         'widget_channel_id',
         'system_channel_id',
-        'application_id',
+        'app_id',
         'channel_id',
         'inviter_id',
         'guild_id',

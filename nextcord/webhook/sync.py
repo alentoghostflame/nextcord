@@ -116,7 +116,7 @@ class WebhookAdapter:
             self._locks[bucket] = lock = threading.Lock()
 
         if payload is not None:
-            headers['Content-Type'] = 'application/json'
+            headers['Content-Type'] = 'app/json'
             to_send = utils._to_json(payload)
 
         if auth_token is not None:
@@ -162,7 +162,7 @@ class WebhookAdapter:
                         response.status = response.status_code  # type: ignore
 
                         data = response.text or None
-                        if data and response.headers['Content-Type'] == 'application/json':
+                        if data and response.headers['Content-Type'] == 'app/json':
                             data = json.loads(data)
 
                         remaining = response.headers.get('X-Ratelimit-Remaining')

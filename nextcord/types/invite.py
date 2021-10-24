@@ -40,7 +40,7 @@ class _InviteOptional(TypedDict, total=False):
     inviter: PartialUser
     target_user: PartialUser
     target_type: InviteTargetType
-    target_application: PartialAppInfo
+    target_app: PartialAppInfo
 
 
 class _InviteMetadata(TypedDict, total=False):
@@ -74,7 +74,7 @@ class _GatewayInviteCreateOptional(TypedDict, total=False):
     inviter: PartialUser
     target_type: InviteTargetType
     target_user: PartialUser
-    target_application: PartialAppInfo
+    target_app: PartialAppInfo
 
 
 class GatewayInviteCreate(_GatewayInviteCreateOptional):

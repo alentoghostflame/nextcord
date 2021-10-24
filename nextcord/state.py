@@ -49,11 +49,11 @@ from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
 from . import utils
-from .flags import ApplicationFlags, Intents, MemberCacheFlags
+from .flags import AppFlags, Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
 from .integrations import _integration_factory
-from .interactions import Interaction
+from .inters import Inter
 from .ui.view import ViewStore, View
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
@@ -75,8 +75,8 @@ if TYPE_CHECKING:
     from .types.sticker import GuildSticker as GuildStickerPayload
     from .types.guild import Guild as GuildPayload
     from .types.message import Message as MessagePayload
-    from .application_command import ApplicationCommandResponse
-    from .command_client import ApplicationCommand
+    from .app_command import AppCommandResponse
+    from .command_client import AppCommand
 
     T = TypeVar('T')
     CS = TypeVar('CS', bound='ConnectionState')
@@ -168,7 +168,7 @@ class ConnectionState:
         self.hooks: Dict[str, Callable] = hooks
         self.shard_count: Optional[int] = None
         self._ready_task: Optional[asyncio.Task] = None
-        self.application_id: Optional[int] = utils._get_as_snowflake(options, 'application_id')
+        self.app_id: Optional[int] = utils._get_as_snowflake(options, 'app_id')
         self.heartbeat_timeout: float = options.get('heartbeat_timeout', 60.0)
         self.guild_ready_timeout: float = options.get('guild_ready_timeout', 2.0)
         if self.guild_ready_timeout < 0:
@@ -309,32 +309,32 @@ class ConnectionState:
         return ret
 
     @property
-    def application_commands(self) -> List[ApplicationCommandResponse]:
-        return list(self._application_commands.values())
+    def app_commands(self) -> List[AppCommandResponse]:
+        return list(self._app_commands.values())
 
-    # def _add_application_command(self, app_cmd: ApplicationCommandResponse):
-    #     self._application_commands[app_cmd.id] = app_cmd
+    # def _add_app_command(self, app_cmd: AppCommandResponse):
+    #     self._app_commands[app_cmd.id] = app_cmd
     #     if app_cmd.guild_id:
-    #         if app_cmd.guild_id not in self._guild_application_command_names:
-    #             self._guild_application_command_names[app_cmd.guild_id] = dict()
-    #         self._guild_application_command_names[app_cmd.guild_id][app_cmd.name] = app_cmd
+    #         if app_cmd.guild_id not in self._guild_app_command_names:
+    #             self._guild_app_command_names[app_cmd.guild_id] = dict()
+    #         self._guild_app_command_names[app_cmd.guild_id][app_cmd.name] = app_cmd
     #     else:
     #         self._global_applicaiton_command_names[app_cmd.name] = app_cmd
     #
-    # def get_application_command(self, cmd_id: int) -> Optional[ApplicationCommandResponse]:
-    #     return self._application_commands.get(cmd_id, None)
+    # def get_app_command(self, cmd_id: int) -> Optional[AppCommandResponse]:
+    #     return self._app_commands.get(cmd_id, None)
     #
-    # def get_guild_application_command(self, guild_id: int, name: str) -> Optional[ApplicationCommandResponse]:
-    #     return self._guild_application_command_names.get(guild_id, dict()).get(name, None)
+    # def get_guild_app_command(self, guild_id: int, name: str) -> Optional[AppCommandResponse]:
+    #     return self._guild_app_command_names.get(guild_id, dict()).get(name, None)
     #
-    # def get_global_application_command(self, name: str) -> Optional[ApplicationCommandResponse]:
+    # def get_global_app_command(self, name: str) -> Optional[AppCommandResponse]:
     #     return self._global_applicaiton_command_names.get(name, None)
     #
-    # def _remove_application_command(self, cmd_id: int):
-    #     app_cmd = self._application_commands.pop(cmd_id, None)
+    # def _remove_app_command(self, cmd_id: int):
+    #     app_cmd = self._app_commands.pop(cmd_id, None)
     #     if app_cmd:
     #         if app_cmd.guild_id:
-    #             self._guild_application_command_names[app_cmd.guild_id].pop(app_cmd.name, None)
+    #             self._guild_app_command_names[app_cmd.guild_id].pop(app_cmd.name, None)
     #         else:
     #             self._global_applicaiton_command_names.pop(app_cmd.name, None)
 
@@ -586,15 +586,15 @@ class ConnectionState:
         self.user = ClientUser(state=self, data=data['user'])
         self.store_user(data['user'])
 
-        if self.application_id is None:
+        if self.app_id is None:
             try:
-                application = data['application']
+                app = data['app']
             except KeyError:
                 pass
             else:
-                self.application_id = utils._get_as_snowflake(application, 'id')
+                self.app_id = utils._get_as_snowflake(app, 'id')
                 # flags will always be present here
-                self.application_flags = ApplicationFlags._from_value(application['flags'])  # type: ignore
+                self.app_flags = AppFlags._from_value(app['flags'])  # type: ignore
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)
@@ -730,14 +730,14 @@ class ConnectionState:
                 if reaction:
                     self.dispatch('reaction_clear_emoji', reaction)
 
-    def parse_interaction_create(self, data) -> None:
-        interaction = Interaction(data=data, state=self)
-        if data['type'] == 3:  # interaction component
-            custom_id = interaction.data['custom_id']  # type: ignore
-            component_type = interaction.data['component_type']  # type: ignore
-            self._view_store.dispatch(component_type, custom_id, interaction)
+    def parse_inter_create(self, data) -> None:
+        inter = Inter(data=data, state=self)
+        if data['type'] == 3:  # inter component
+            custom_id = inter.data['custom_id']  # type: ignore
+            component_type = inter.data['component_type']  # type: ignore
+            self._view_store.dispatch(component_type, custom_id, inter)
 
-        self.dispatch('interaction', interaction)
+        self.dispatch('inter', inter)
 
     def parse_presence_update(self, data) -> None:
         guild_id = utils._get_as_snowflake(data, 'guild_id')
@@ -1545,14 +1545,14 @@ class AutoShardedConnectionState(ConnectionState):
         # self._users is a list of Users, we're setting a ClientUser
         self._users[user.id] = user  # type: ignore
 
-        if self.application_id is None:
+        if self.app_id is None:
             try:
-                application = data['application']
+                app = data['app']
             except KeyError:
                 pass
             else:
-                self.application_id = utils._get_as_snowflake(application, 'id')
-                self.application_flags = ApplicationFlags._from_value(application['flags'])
+                self.app_id = utils._get_as_snowflake(app, 'id')
+                self.app_flags = AppFlags._from_value(app['flags'])
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)

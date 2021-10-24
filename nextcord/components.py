@@ -144,7 +144,7 @@ class Button(Component):
     style: :class:`.ButtonStyle`
         The style of the button.
     custom_id: Optional[:class:`str`]
-        The ID of the button that gets received during an interaction.
+        The ID of the button that gets received during an inter.
         If this button is for a URL, it does not have a custom ID.
     url: Optional[:class:`str`]
         The URL this button sends you to.
@@ -215,7 +215,7 @@ class SelectMenu(Component):
     Attributes
     ------------
     custom_id: Optional[:class:`str`]
-        The ID of the select menu that gets received during an interaction.
+        The ID of the select menu that gets received during an inter.
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
     min_values: :class:`int`

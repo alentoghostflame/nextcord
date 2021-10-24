@@ -130,7 +130,7 @@ class Guild(_BaseGuildPreview, _GuildOptional):
     roles: List[Role]
     mfa_level: MFALevel
     nsfw_level: NSFWLevel
-    application_id: Optional[Snowflake]
+    app_id: Optional[Snowflake]
     system_channel_id: Optional[Snowflake]
     system_channel_flags: int
     rules_channel_id: Optional[Snowflake]

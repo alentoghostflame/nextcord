@@ -57,7 +57,7 @@ class Button(Item[V]):
     style: :class:`nextcord.ButtonStyle`
         The style of the button.
     custom_id: Optional[:class:`str`]
-        The ID of the button that gets received during an interaction.
+        The ID of the button that gets received during an inter.
         If this button is for a URL, it does not have a custom ID.
     url: Optional[:class:`str`]
         The URL this button sends you to.
@@ -136,7 +136,7 @@ class Button(Item[V]):
 
     @property
     def custom_id(self) -> Optional[str]:
-        """Optional[:class:`str`]: The ID of the button that gets received during an interaction.
+        """Optional[:class:`str`]: The ID of the button that gets received during an inter.
 
         If this button is for a URL, it does not have a custom ID.
         """
@@ -239,7 +239,7 @@ def button(
 
     The function being decorated should have three parameters, ``self`` representing
     the :class:`nextcord.ui.View`, the :class:`nextcord.ui.Button` being pressed and
-    the :class:`nextcord.Interaction` you receive.
+    the :class:`nextcord.Inter` you receive.
 
     .. note::
 
@@ -254,7 +254,7 @@ def button(
     label: Optional[:class:`str`]
         The label of the button, if any.
     custom_id: Optional[:class:`str`]
-        The ID of the button that gets received during an interaction.
+        The ID of the button that gets received during an inter.
         It is recommended not to set this parameter to prevent conflicts.
     style: :class:`.ButtonStyle`
         The style of the button. Defaults to :attr:`.ButtonStyle.grey`.

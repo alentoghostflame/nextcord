@@ -47,7 +47,7 @@ __all__ = (
 
 
 if TYPE_CHECKING:
-    from ..interactions import Interaction
+    from ..inters import Inter
     from ..message import Message
     from ..types.components import Component as ComponentPayload
     from ..state import ConnectionState
@@ -125,13 +125,13 @@ class View:
     Parameters
     -----------
     timeout: Optional[:class:`float`]
-        Timeout in seconds from last interaction with the UI before no longer accepting input.
+        Timeout in seconds from last inter with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
 
     Attributes
     ------------
     timeout: Optional[:class:`float`]
-        Timeout from last interaction with the UI before no longer accepting input.
+        Timeout from last inter with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
     children: List[:class:`Item`]
         The list of children attached to this view.
@@ -292,14 +292,14 @@ class View:
         self.children.clear()
         self.__weights.clear()
 
-    async def interaction_check(self, interaction: Interaction) -> bool:
+    async def inter_check(self, inter: Inter) -> bool:
         """|coro|
 
-        A callback that is called when an interaction happens within the view
-        that checks whether the view should process item callbacks for the interaction.
+        A callback that is called when an inter happens within the view
+        that checks whether the view should process item callbacks for the inter.
 
         This is useful to override if, for example, you want to ensure that the
-        interaction author is a given user.
+        inter author is a given user.
 
         The default implementation of this returns ``True``.
 
@@ -310,8 +310,8 @@ class View:
 
         Parameters
         -----------
-        interaction: :class:`~nextcord.Interaction`
-            The interaction that occurred.
+        inter: :class:`~nextcord.Inter`
+            The inter that occurred.
 
         Returns
         ---------
@@ -327,10 +327,10 @@ class View:
         """
         pass
 
-    async def on_error(self, error: Exception, item: Item, interaction: Interaction) -> None:
+    async def on_error(self, error: Exception, item: Item, inter: Inter) -> None:
         """|coro|
 
-        A callback that is called when an item's callback or :meth:`interaction_check`
+        A callback that is called when an item's callback or :meth:`inter_check`
         fails with an error.
 
         The default implementation prints the traceback to stderr.
@@ -341,26 +341,26 @@ class View:
             The exception that was raised.
         item: :class:`Item`
             The item that failed the dispatch.
-        interaction: :class:`~nextcord.Interaction`
-            The interaction that led to the failure.
+        inter: :class:`~nextcord.Inter`
+            The inter that led to the failure.
         """
         print(f'Ignoring exception in view {self} for item {item}:', file=sys.stderr)
         traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
 
-    async def _scheduled_task(self, item: Item, interaction: Interaction):
+    async def _scheduled_task(self, item: Item, inter: Inter):
         try:
             if self.timeout:
                 self.__timeout_expiry = time.monotonic() + self.timeout
 
-            allow = await self.interaction_check(interaction)
+            allow = await self.inter_check(inter)
             if not allow:
                 return
 
-            await item.callback(interaction)
-            if not interaction.response._responded:
-                await interaction.response.defer()
+            await item.callback(inter)
+            if not inter.response._responded:
+                await inter.response.defer()
         except Exception as e:
-            return await self.on_error(e, item, interaction)
+            return await self.on_error(e, item, inter)
 
     def _start_listening_from_store(self, store: ViewStore) -> None:
         self.__cancel_callback = partial(store.remove_view)
@@ -379,11 +379,11 @@ class View:
         self.__stopped.set_result(True)
         asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
 
-    def _dispatch_item(self, item: Item, interaction: Interaction):
+    def _dispatch_item(self, item: Item, inter: Inter):
         if self.__stopped.done():
             return
 
-        asyncio.create_task(self._scheduled_task(item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
+        asyncio.create_task(self._scheduled_task(item, inter), name=f'discord-ui-view-dispatch-{self.id}')
 
     def refresh(self, components: List[Component]):
         # This is pretty hacky at the moment
@@ -407,7 +407,7 @@ class View:
         self.children = children
 
     def stop(self) -> None:
-        """Stops listening to interaction events from this view.
+        """Stops listening to inter events from this view.
 
         This operation cannot be undone.
         """
@@ -503,9 +503,9 @@ class ViewStore:
                 del self._synced_message_views[key]
                 break
 
-    def dispatch(self, component_type: int, custom_id: str, interaction: Interaction):
+    def dispatch(self, component_type: int, custom_id: str, inter: Inter):
         self.__verify_integrity()
-        message_id: Optional[int] = interaction.message and interaction.message.id
+        message_id: Optional[int] = inter.message and inter.message.id
         key = (component_type, message_id, custom_id)
         # Fallback to None message_id searches in case a persistent view
         # was added without an associated message_id
@@ -514,8 +514,8 @@ class ViewStore:
             return
 
         view, item = value
-        item.refresh_state(interaction)
-        view._dispatch_item(item, interaction)
+        item.refresh_state(inter)
+        view._dispatch_item(item, inter)
 
     def is_message_tracked(self, message_id: int):
         return message_id in self._synced_message_views

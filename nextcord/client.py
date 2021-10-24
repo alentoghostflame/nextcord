@@ -40,11 +40,11 @@ from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
 from .channel import _threaded_channel_factory, PartialMessageable
-from .enums import ChannelType, InteractionType
+from .enums import ChannelType, InterType
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, VoiceRegion
-from .flags import ApplicationFlags, Intents
+from .flags import AppFlags, Intents
 from .gateway import *
 from .activity import ActivityTypes, BaseActivity, create_activity
 from .voice_client import VoiceClient
@@ -59,10 +59,10 @@ from .iterators import GuildIterator
 from .appinfo import AppInfo
 from .ui.view import View
 from .stage_instance import StageInstance
-from .interactions import Interaction
+from .inters import Inter
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
-from .application_command import ApplicationCommandResponse, ApplicationCommandType
+from .app_command import AppCommandResponse, AppCommandType
 
 if TYPE_CHECKING:
     from .abc import SnowflakeTime, PrivateChannel, GuildChannel, Snowflake
@@ -70,7 +70,7 @@ if TYPE_CHECKING:
     from .message import Message
     from .member import Member
     from .voice_client import VoiceProtocol
-    from .command_client import ApplicationCommand
+    from .command_client import AppCommand
 
 __all__ = (
     'Client',
@@ -140,8 +140,8 @@ class Client:
         Integer starting at ``0`` and less than :attr:`.shard_count`.
     shard_count: Optional[:class:`int`]
         The total number of shards.
-    application_id: :class:`int`
-        The client's application ID.
+    app_id: :class:`int`
+        The client's app ID.
     intents: :class:`Intents`
         The intents that you want to enable for the session. This is a way of
         disabling and enabling certain gateway events from triggering and being sent.
@@ -237,14 +237,14 @@ class Client:
         self._ready: asyncio.Event = asyncio.Event()
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
-        # self._application_commands_to_add: Dict[Coroutine, List[Dict[str, Any]]] = {}  # TODO: Figure out better way to pair callback with json payload.
+        # self._app_commands_to_add: Dict[Coroutine, List[Dict[str, Any]]] = {}  # TODO: Figure out better way to pair callback with json payload.
         # Key is a tuple: First is the command name, second is the Guild ID as an int or None if a global command.
-        # Value is a Tuple with the payload and ApplicationCommand.
-        # self._application_commands_to_add: Dict[Tuple[str, Optional[int]], Dict[str, Any]] = {}
-        # self._application_commands: Dict[int, Callable] = {}
-        self._application_commands: List[ApplicationCommand] = []
-        self._registered_application_commands: Dict[int, ApplicationCommand] = {}
-        self._application_commands_to_bulk_add: Dict[Tuple[ApplicationCommandType, str, Optional[int]], Tuple[dict, ApplicationCommand]] = {}
+        # Value is a Tuple with the payload and AppCommand.
+        # self._app_commands_to_add: Dict[Tuple[str, Optional[int]], Dict[str, Any]] = {}
+        # self._app_commands: Dict[int, Callable] = {}
+        self._app_commands: List[AppCommand] = []
+        self._registered_app_commands: Dict[int, AppCommand] = {}
+        self._app_commands_to_bulk_add: Dict[Tuple[AppCommandType, str, Optional[int]], Tuple[dict, AppCommand]] = {}
         self._register_commands_on_startup: bool = options.pop('register_commands_on_startup', True)
 
         if VoiceClient.warn_nacl:
@@ -335,8 +335,8 @@ class Client:
         return self._connection.voice_clients
 
     @property
-    def application_id(self) -> Optional[int]:
-        """Optional[:class:`int`]: The client's application ID.
+    def app_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The client's app ID.
 
         If this is not passed via ``__init__`` then this is retrieved
         through the gateway when an event contains the data. Usually
@@ -344,15 +344,15 @@ class Client:
         
         .. versionadded:: 2.0
         """
-        return self._connection.application_id
+        return self._connection.app_id
 
     @property
-    def application_flags(self) -> ApplicationFlags:
-        """:class:`~nextcord.ApplicationFlags`: The client's application flags.
+    def app_flags(self) -> AppFlags:
+        """:class:`~nextcord.AppFlags`: The client's app flags.
 
         .. versionadded:: 2.0
         """
-        return self._connection.application_flags  # type: ignore
+        return self._connection.app_flags  # type: ignore
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
@@ -1426,10 +1426,10 @@ class Client:
 
         return Widget(state=self._connection, data=data)
 
-    async def application_info(self) -> AppInfo:
+    async def app_info(self) -> AppInfo:
         """|coro|
 
-        Retrieves the bot's application information.
+        Retrieves the bot's app information.
 
         Raises
         -------
@@ -1439,9 +1439,9 @@ class Client:
         Returns
         --------
         :class:`.AppInfo`
-            The bot's application information.
+            The bot's app information.
         """
-        data = await self.http.application_info()
+        data = await self.http.app_info()
         if 'rpc_origins' not in data:
             data['rpc_origins'] = None
         return AppInfo(self._connection, data)
@@ -1658,31 +1658,31 @@ class Client:
         return self._connection.persistent_views
 
     # async def on_connect(self):
-    #     raw_response = await self.http.get_global_commands(self.application_id)
+    #     raw_response = await self.http.get_global_commands(self.app_id)
     #     for raw_command in raw_response:
-    #         app_cmd_response = ApplicationCommandResponse(self._connection, raw_command)
-    #         self._connection._add_application_command(app_cmd_response)
+    #         app_cmd_response = AppCommandResponse(self._connection, raw_command)
+    #         self._connection._add_app_command(app_cmd_response)
     #     pass
 
     async def on_connect(self):
         if self._register_commands_on_startup:
-            await self.register_bulk_application_commands()  # TODO: Make better.
+            await self.register_bulk_app_commands()  # TODO: Make better.
 
-    async def on_interaction(self, interaction: Interaction):
+    async def on_inter(self, inter: Inter):
         # TODO: This seems a bit better, but ehh?
-        if interaction.type is InteractionType.application_command:
-            # if app_cmd_callback := self._application_commands.get(int(interaction.data["id"])):
-            if app_cmd := self._registered_application_commands.get(int(interaction.data["id"])):
-                # await app_cmd_callback(interaction)
-                await app_cmd.call_from_interaction(interaction)
+        if inter.type is InterType.app_command:
+            # if app_cmd_callback := self._app_commands.get(int(inter.data["id"])):
+            if app_cmd := self._registered_app_commands.get(int(inter.data["id"])):
+                # await app_cmd_callback(inter)
+                await app_cmd.call_from_inter(inter)
             else:
-                print(f"CLIENT.PY: Received an interaction for an application command that isn't registered, hmm. ID: {interaction.data['id']}")
+                print(f"Slash_Client: Received an interaction for an app command that isn't registered ID: {inter.data['id']}")
 
-    async def register_bulk_application_commands(self):
+    async def register_bulk_app_commands(self):
         # TODO: Using Bulk upsert seems to delete all commands
         guild_payloads_to_bulk: Dict[int, List[dict]] = {}
         global_payloads_to_bulk: List[dict] = []
-        for unique_id, payload_app_cmd in self._application_commands_to_bulk_add.items():
+        for unique_id, payload_app_cmd in self._app_commands_to_bulk_add.items():
             if guild_id := payload_app_cmd[0].get("guild_id"):
                 if guild_id not in guild_payloads_to_bulk:
                     guild_payloads_to_bulk[guild_id] = list()
@@ -1691,113 +1691,113 @@ class Client:
                 global_payloads_to_bulk.append(payload_app_cmd[0])
 
         if global_payloads_to_bulk:
-            print("CLIENT.PY: Sending Global commands to Discord")
-            response_list = await self.http.bulk_upsert_global_commands(self.application_id, global_payloads_to_bulk)
-            self._handle_bulk_application_commands(response_list)
+            print("Slash_Client: Sending Global commands to Discord")
+            response_list = await self.http.bulk_upsert_global_commands(self.app_id, global_payloads_to_bulk)
+            self._handle_bulk_app_commands(response_list)
 
         if guild_payloads_to_bulk:
-            print("CLIENT.PY: Starting send of Guild commands to Discord.")
+            print("Slash_Client: Starting send of Guild commands to Discord.")
             for guild_id, payload_list in guild_payloads_to_bulk.items():
-                print(f"  CLIENT.PY: Sending commands to Guild {guild_id}")
-                response_list = await self.http.bulk_upsert_guild_commands(self.application_id, guild_id, payload_list)
-                self._handle_bulk_application_commands(response_list)
+                print(f"  Slash_Client: Sending commands to Guild {guild_id}")
+                response_list = await self.http.bulk_upsert_guild_commands(self.app_id, guild_id, payload_list)
+                self._handle_bulk_app_commands(response_list)
 
-        self._application_commands_to_bulk_add.clear()
+        self._app_commands_to_bulk_add.clear()
 
-    def _handle_bulk_application_commands(self, raw_response_list: List[dict]):
+    def _handle_bulk_app_commands(self, raw_response_list: List[dict]):
         for raw_response in raw_response_list:
-            response = ApplicationCommandResponse(self._connection, raw_response)
+            response = AppCommandResponse(self._connection, raw_response)
             payload_unique_id = (response.type, response.name, response.guild_id)
-            if payload_app_cmd := self._application_commands_to_bulk_add.get(payload_unique_id):
+            if payload_app_cmd := self._app_commands_to_bulk_add.get(payload_unique_id):
                 command = payload_app_cmd[1]
-                print(f"    CLIENT.PY: Parsing response of command {command.name} for guild {response.guild_id}. ID: {response.id}")
+                print(f"    Slash_Client: Parsing response of command {command.name} for guild {response.guild_id}. ID: {response.id}")
                 command.parse_response(response)
                 # TODO: Move this to own function probably.
-                if command not in self._application_commands:
-                    self._application_commands.append(command)
-                self._registered_application_commands[response.id] = command
+                if command not in self._app_commands:
+                    self._app_commands.append(command)
+                self._registered_app_commands[response.id] = command
             else:
                 raise ValueError(f"What the FUCK is going on, Payload ID {payload_app_cmd} doesn't correspond to "
                                  f"anything in the dict of commands to bulk add!")  # TODO: Clean up language.
 
-    def add_application_command_to_bulk(self, command: ApplicationCommand):
+    def add_app_command_to_bulk(self, command: AppCommand):
         payload_list = command.payload
         for payload in payload_list:
-            self._add_application_payload_to_bulk(command, command.name, payload.get("guild_id", None), payload)
+            self._add_app_payload_to_bulk(command, command.name, payload.get("guild_id", None), payload)
 
-    def _add_application_payload_to_bulk(self, command: ApplicationCommand, name: str, guild_id: Optional[int],
+    def _add_app_payload_to_bulk(self, command: AppCommand, name: str, guild_id: Optional[int],
                                          payload: dict):
         payload_unique_id = (command.type, name, guild_id)  # Note: None means global.
-        if payload_unique_id in self._application_commands_to_bulk_add:
+        if payload_unique_id in self._app_commands_to_bulk_add:
             raise ValueError(f"Cannot add duplicate command {name}|{guild_id} payload to bulk add.")
         else:
-            self._application_commands_to_bulk_add[payload_unique_id] = (payload, command)
+            self._app_commands_to_bulk_add[payload_unique_id] = (payload, command)
 
-    async def register_application_command(self, command: ApplicationCommand):
+    async def register_app_command(self, command: AppCommand):
         payload_list = command.payload
         for payload in payload_list:
             if payload.get("guild_id"):
-                raw_response = await self.http.upsert_guild_command(self.application_id, payload["guild_id"], payload)
+                raw_response = await self.http.upsert_guild_command(self.app_id, payload["guild_id"], payload)
             else:
-                raw_response = await self.http.upsert_global_command(self.application_id, payload)
-            response = ApplicationCommandResponse(self._connection, raw_response)
-            self._registered_application_commands[response.id] = command
+                raw_response = await self.http.upsert_global_command(self.app_id, payload)
+            response = AppCommandResponse(self._connection, raw_response)
+            self._registered_app_commands[response.id] = command
             command.parse_response(response)
-        self._application_commands.append(command)
+        self._app_commands.append(command)
     #     # If guild_id is None, assume this is a global command.
     #     if guild_id:
     #         print(f"CLIENT.PY: Registering guild command {payload['name']} for guild {guild_id}")
-    #         response_json = await self.http.upsert_guild_command(self.application_id, guild_id, payload)
+    #         response_json = await self.http.upsert_guild_command(self.app_id, guild_id, payload)
     #     else:
     #         print(f"CLIENT.PY: Registering global command {payload['name']}")
-    #         response_json = await self.http.upsert_global_command(self.application_id, payload)
-    #     app_response = ApplicationCommandResponse(self._connection, response_json)
-    #     self._connection._add_application_command(app_response)
-    #     self._application_commands[app_response.id] = callback
+    #         response_json = await self.http.upsert_global_command(self.app_id, payload)
+    #     app_response = AppCommandResponse(self._connection, response_json)
+    #     self._connection._add_app_command(app_response)
+    #     self._app_commands[app_response.id] = callback
     #     return app_response
     #
-    # async def get_application_commands(self):
-    #     raw_response = await self.http.get_global_commands(self.application_id)
+    # async def get_app_commands(self):
+    #     raw_response = await self.http.get_global_commands(self.app_id)
     #     for raw_command in raw_response:
-    #         app_cmd_response = ApplicationCommandResponse(self._connection, raw_command)
-    #         self._connection._add_application_command(app_cmd_response)
+    #         app_cmd_response = AppCommandResponse(self._connection, raw_command)
+    #         self._connection._add_app_command(app_cmd_response)
     #     for guild in self.guilds:
     #         print(f"GET APP CMDS: grabbing commands from guild {guild.name}")
     #         try:
     #             # TODO: When a large bot is in 1k+ guilds, this is going to take forever AND get rate limited. Fix this.
-    #             raw_response = await self.http.get_guild_commands(self.application_id, guild.id)
+    #             raw_response = await self.http.get_guild_commands(self.app_id, guild.id)
     #             for raw_command in raw_response:
-    #                 app_cmd_response = ApplicationCommandResponse(self._connection, raw_command)
-    #                 self._connection._add_application_command(app_cmd_response)
+    #                 app_cmd_response = AppCommandResponse(self._connection, raw_command)
+    #                 self._connection._add_app_command(app_cmd_response)
     #         except Forbidden:
-    #             print(f"From get_application_commands, we don't have command permissions for "
+    #             print(f"From get_app_commands, we don't have command permissions for "
     #                   f"guild {guild.name}|{guild.id} ")
 
-    async def delete_unknown_guild_application_commands(self):
+    async def delete_unknown_guild_app_commands(self):
         pass
         # to_remove = []
-        # for app_response in self._connection.application_commands:
-        #     if app_response.id not in self._connection.application_commands:
+        # for app_response in self._connection.app_commands:
+        #     if app_response.id not in self._connection.app_commands:
         #         if app_response.guild_id:
         #             print(f"Removing command NAME {app_response.name} ID {app_response.id} from "
         #                   f"GUILD {app_response.guild.name} ID {app_response.guild_id}")
-        #             await self.http.delete_guild_command(self.application_id, app_response.guild_id, app_response.id)
+        #             await self.http.delete_guild_command(self.app_id, app_response.guild_id, app_response.id)
         #         else:
         #             print(f"Removing command NAME {app_response.name} ID {app_response.id}")
-        #             await self.http.delete_global_command(self.application_id, app_response.id)
+        #             await self.http.delete_global_command(self.app_id, app_response.id)
         #         to_remove.append(app_response.id)
         # for app_id in to_remove:
-        #     self._connection._remove_application_command(app_id)
+        #     self._connection._remove_app_command(app_id)
 
     async def delete_unknown_global_commands(self):
-        raw_response = await self.http.get_global_commands(self.application_id)
+        raw_response = await self.http.get_global_commands(self.app_id)
 
     async def delete_unknown_guild_commands(self, guild_id: int):
         try:
             to_remove = []
-            raw_response_list = await self.http.get_guild_commands(self.application_id, guild_id)
+            raw_response_list = await self.http.get_guild_commands(self.app_id, guild_id)
             for raw_response in raw_response_list:
-                response = ApplicationCommandResponse(self._connection, raw_response_list)
+                response = AppCommandResponse(self._connection, raw_response_list)
                 if response.id not in to_remove:
                     to_remove.append(response.id)
         except Forbidden:

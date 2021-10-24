@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     except ModuleNotFoundError:
         _ResponseType = ClientResponse
 
-    from .interactions import Interaction
+    from .inters import Inter
 
 __all__ = (
     'DiscordException',
@@ -51,7 +51,7 @@ __all__ = (
     'LoginFailure',
     'ConnectionClosed',
     'PrivilegedIntentsRequired',
-    'InteractionResponded',
+    'InterResponded',
 )
 
 
@@ -235,7 +235,7 @@ class PrivilegedIntentsRequired(ClientException):
     """Exception that's raised when the gateway is requesting privileged intents
     but they're not ticked in the developer page yet.
 
-    Go to https://discord.com/developers/applications/ and enable the intents
+    Go to https://discord.com/developers/apps/ and enable the intents
     that are required. Currently these are as follows:
 
     - :attr:`Intents.members`
@@ -251,27 +251,27 @@ class PrivilegedIntentsRequired(ClientException):
         self.shard_id: Optional[int] = shard_id
         msg = (
             'Shard ID %s is requesting privileged intents that have not been explicitly enabled in the '
-            'developer portal. It is recommended to go to https://discord.com/developers/applications/ '
-            'and explicitly enable the privileged intents within your application\'s page. If this is not '
+            'developer portal. It is recommended to go to https://discord.com/developers/apps/ '
+            'and explicitly enable the privileged intents within your app\'s page. If this is not '
             'possible, then consider disabling the privileged intents instead.'
         )
         super().__init__(msg % shard_id)
 
 
-class InteractionResponded(ClientException):
-    """Exception that's raised when sending another interaction response using
-    :class:`InteractionResponse` when one has already been done before.
+class InterResponded(ClientException):
+    """Exception that's raised when sending another inter response using
+    :class:`InterResponse` when one has already been done before.
 
-    An interaction can only respond once.
+    An inter can only respond once.
 
     .. versionadded:: 2.0
 
     Attributes
     -----------
-    interaction: :class:`Interaction`
-        The interaction that's already been responded to.
+    inter: :class:`Inter`
+        The inter that's already been responded to.
     """
 
-    def __init__(self, interaction: Interaction):
-        self.interaction: Interaction = interaction
-        super().__init__('This interaction has already been responded to before')
+    def __init__(self, inter: Inter):
+        self.inter: Inter = inter
+        super().__init__('This inter has already been responded to before')
