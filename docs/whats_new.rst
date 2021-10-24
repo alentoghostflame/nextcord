@@ -18,6 +18,7 @@ Warning: **This Does Not Show The Changes In Discord.pyV2**
 Bug Fixes
 ~~~~~~~~~~
 Fixed The Create_Sticker glitch
+
 Fixed RTD String Error
 
 Additions
