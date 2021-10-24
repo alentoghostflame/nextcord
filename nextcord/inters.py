@@ -29,8 +29,8 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
 import asyncio
 
 from . import utils
-from .enums import try_enum, InteractionType, InteractionResponseType
-from .errors import InteractionResponded, HTTPException, ClientException
+from .enums import try_enum, InterType, InterResponseType
+from .errors import InterResponded, HTTPException, ClientException
 from .channel import PartialMessageable, ChannelType
 
 from .user import User
@@ -41,15 +41,15 @@ from .permissions import Permissions
 from .webhook.async_ import async_context, Webhook, handle_message_parameters
 
 __all__ = (
-    'Interaction',
-    'InteractionMessage',
-    'InteractionResponse',
+    'Inter',
+    'InterMessage',
+    'InterResponse',
 )
 
 if TYPE_CHECKING:
-    from .types.interactions import (
-        Interaction as InteractionPayload,
-        InteractionData,
+    from .types.Inters import (
+        Inter as InterPayload,
+        InterData,
     )
     from .guild import Guild
     from .state import ConnectionState
@@ -61,17 +61,17 @@ if TYPE_CHECKING:
     from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, PartialMessageable
     from .threads import Thread
 
-    InteractionChannel = Union[
+    InterChannel = Union[
         VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, Thread, PartialMessageable
     ]
 
 MISSING: Any = utils.MISSING
 
 
-class Interaction:
-    """Represents a Discord interaction.
+class Inter:
+    """Represents a Discord Inter.
 
-    An interaction happens when a user does an action that needs to
+    An Inter happens when a user does an action that needs to
     be notified. Current examples are slash commands and components.
 
     .. versionadded:: 2.0
@@ -79,24 +79,24 @@ class Interaction:
     Attributes
     -----------
     id: :class:`int`
-        The interaction's ID.
-    type: :class:`InteractionType`
-        The interaction type.
+        The Inter's ID.
+    type: :class:`InterType`
+        The Inter type.
     guild_id: Optional[:class:`int`]
-        The guild ID the interaction was sent from.
+        The guild ID the Inter was sent from.
     channel_id: Optional[:class:`int`]
-        The channel ID the interaction was sent from.
-    application_id: :class:`int`
-        The application ID that the interaction was for.
+        The channel ID the Inter was sent from.
+    app_id: :class:`int`
+        The app ID that the Inter was for.
     user: Optional[Union[:class:`User`, :class:`Member`]]
-        The user or member that sent the interaction.
+        The user or member that sent the Inter.
     message: Optional[:class:`Message`]
-        The message that sent this interaction.
+        The message that sent this Inter.
     token: :class:`str`
-        The token to continue the interaction. These are valid
+        The token to continue the Inter. These are valid
         for 15 minutes.
     data: :class:`dict`
-        The raw interaction data.
+        The raw Inter data.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -105,7 +105,7 @@ class Interaction:
         'guild_id',
         'channel_id',
         'data',
-        'application_id',
+        'app_id',
         'message',
         'user',
         'token',
@@ -119,21 +119,21 @@ class Interaction:
         '_cs_channel',
     )
 
-    def __init__(self, *, data: InteractionPayload, state: ConnectionState):
+    def __init__(self, *, data: InterPayload, state: ConnectionState):
         self._state: ConnectionState = state
         self._session: ClientSession = state.http._HTTPClient__session
-        self._original_message: Optional[InteractionMessage] = None
+        self._original_message: Optional[InterMessage] = None
         self._from_data(data)
 
-    def _from_data(self, data: InteractionPayload):
+    def _from_data(self, data: InterPayload):
         self.id: int = int(data['id'])
-        self.type: InteractionType = try_enum(InteractionType, data['type'])
-        self.data: Optional[InteractionData] = data.get('data')
+        self.type: InterType = try_enum(InterType, data['type'])
+        self.data: Optional[InterData] = data.get('data')
         self.token: str = data['token']
         self.version: int = data['version']
         self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
-        self.application_id: int = int(data['application_id'])
+        self.app_id: int = int(data['app_id'])
 
         self.message: Optional[Message]
         try:
@@ -162,12 +162,12 @@ class Interaction:
 
     @property
     def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: The guild the interaction was sent from."""
+        """Optional[:class:`Guild`]: The guild the Inter was sent from."""
         return self._state and self._state._get_guild(self.guild_id)
 
     @utils.cached_slot_property('_cs_channel')
-    def channel(self) -> Optional[InteractionChannel]:
-        """Optional[Union[:class:`abc.GuildChannel`, :class:`PartialMessageable`, :class:`Thread`]]: The channel the interaction was sent from.
+    def channel(self) -> Optional[InterChannel]:
+        """Optional[Union[:class:`abc.GuildChannel`, :class:`PartialMessageable`, :class:`Thread`]]: The channel the Inter was sent from.
 
         Note that due to a Discord limitation, DM channels are not resolved since there is
         no data to complete them. These are :class:`PartialMessageable` instead.
@@ -190,32 +190,32 @@ class Interaction:
         return Permissions(self._permissions)
 
     @utils.cached_slot_property('_cs_response')
-    def response(self) -> InteractionResponse:
-        """:class:`InteractionResponse`: Returns an object responsible for handling responding to the interaction.
+    def response(self) -> InterResponse:
+        """:class:`InterResponse`: Returns an object responsible for handling responding to the Inter.
 
         A response can only be done once. If secondary messages need to be sent, consider using :attr:`followup`
         instead.
         """
-        return InteractionResponse(self)
+        return InterResponse(self)
 
     @utils.cached_slot_property('_cs_followup')
     def followup(self) -> Webhook:
-        """:class:`Webhook`: Returns the follow up webhook for follow up interactions."""
+        """:class:`Webhook`: Returns the follow up webhook for follow up Inters."""
         payload = {
-            'id': self.application_id,
+            'id': self.app_id,
             'type': 3,
             'token': self.token,
         }
         return Webhook.from_state(data=payload, state=self._state)
 
-    async def original_message(self) -> InteractionMessage:
+    async def original_message(self) -> InterMessage:
         """|coro|
 
-        Fetches the original interaction response message associated with the interaction.
+        Fetches the original Inter response message associated with the Inter.
 
-        If the interaction response was :meth:`InteractionResponse.send_message` then this would
+        If the Inter response was :meth:`InterResponse.send_message` then this would
         return the message that was sent using that response. Otherwise, this would return
-        the message that triggered the interaction.
+        the message that triggered the Inter.
 
         Repeated calls to this will return a cached value.
 
@@ -228,8 +228,8 @@ class Interaction:
 
         Returns
         --------
-        InteractionMessage
-            The original interaction response message.
+        InterMessage
+            The original Inter response message.
         """
 
         if self._original_message is not None:
@@ -241,13 +241,13 @@ class Interaction:
             raise ClientException('Channel for message could not be resolved')
 
         adapter = async_context.get()
-        data = await adapter.get_original_interaction_response(
-            application_id=self.application_id,
+        data = await adapter.get_original_Inter_response(
+            app_id=self.app_id,
             token=self.token,
             session=self._session,
         )
-        state = _InteractionMessageState(self, self._state)
-        message = InteractionMessage(state=state, channel=channel, data=data)  # type: ignore
+        state = _InterMessageState(self, self._state)
+        message = InterMessage(state=state, channel=channel, data=data)  # type: ignore
         self._original_message = message
         return message
 
@@ -261,12 +261,12 @@ class Interaction:
         files: List[File] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
-    ) -> InteractionMessage:
+    ) -> InterMessage:
         """|coro|
 
-        Edits the original interaction response message.
+        Edits the original Inter response message.
 
-        This is a lower level interface to :meth:`InteractionMessage.edit` in case
+        This is a lower level interface to :meth:`InterMessage.edit` in case
         you do not want to fetch the message and save an HTTP request.
 
         This method is also the only way to edit the original message if
@@ -306,7 +306,7 @@ class Interaction:
 
         Returns
         --------
-        :class:`InteractionMessage`
+        :class:`InterMessage`
             The newly edited message.
         """
 
@@ -322,8 +322,8 @@ class Interaction:
             previous_allowed_mentions=previous_mentions,
         )
         adapter = async_context.get()
-        data = await adapter.edit_original_interaction_response(
-            self.application_id,
+        data = await adapter.edit_original_Inter_response(
+            self.app_id,
             self.token,
             session=self._session,
             payload=params.payload,
@@ -332,7 +332,7 @@ class Interaction:
         )
 
         # The message channel types should always match
-        message = InteractionMessage(state=self._state, channel=self.channel, data=data)  # type: ignore
+        message = InterMessage(state=self._state, channel=self.channel, data=data)  # type: ignore
         if view and not view.is_finished():
             self._state.store_view(view, message.id)
         return message
@@ -340,9 +340,9 @@ class Interaction:
     async def delete_original_message(self) -> None:
         """|coro|
 
-        Deletes the original interaction response message.
+        Deletes the original Inter response message.
 
-        This is a lower level interface to :meth:`InteractionMessage.delete` in case
+        This is a lower level interface to :meth:`InterMessage.delete` in case
         you do not want to fetch the message and save an HTTP request.
 
         Raises
@@ -353,17 +353,17 @@ class Interaction:
             Deleted a message that is not yours.
         """
         adapter = async_context.get()
-        await adapter.delete_original_interaction_response(
-            self.application_id,
+        await adapter.delete_original_Inter_response(
+            self.app_id,
             self.token,
             session=self._session,
         )
 
 
-class InteractionResponse:
-    """Represents a Discord interaction response.
+class InterResponse:
+    """Represents a Discord Inter response.
 
-    This type can be accessed through :attr:`Interaction.response`.
+    This type can be accessed through :attr:`Inter.response`.
 
     .. versionadded:: 2.0
     """
@@ -373,54 +373,54 @@ class InteractionResponse:
         '_parent',
     )
 
-    def __init__(self, parent: Interaction):
-        self._parent: Interaction = parent
+    def __init__(self, parent: Inter):
+        self._parent: Inter = parent
         self._responded: bool = False
 
     def is_done(self) -> bool:
-        """:class:`bool`: Indicates whether an interaction response has been done before.
+        """:class:`bool`: Indicates whether an Inter response has been done before.
 
-        An interaction can only be responded to once.
+        An Inter can only be responded to once.
         """
         return self._responded
 
     async def defer(self, *, ephemeral: bool = False) -> None:
         """|coro|
 
-        Defers the interaction response.
+        Defers the Inter response.
 
-        This is typically used when the interaction is acknowledged
+        This is typically used when the Inter is acknowledged
         and a secondary action will be done later.
 
         Parameters
         -----------
         ephemeral: :class:`bool`
             Indicates whether the deferred message will eventually be ephemeral.
-            This only applies for interactions of type :attr:`InteractionType.application_command`.
+            This only applies for Inters of type :attr:`InterType.app_command`.
 
         Raises
         -------
         HTTPException
-            Deferring the interaction failed.
-        InteractionResponded
-            This interaction has already been responded to before.
+            Deferring the Inter failed.
+        InterResponded
+            This Inter has already been responded to before.
         """
         if self._responded:
-            raise InteractionResponded(self._parent)
+            raise InterResponded(self._parent)
 
         defer_type: int = 0
         data: Optional[Dict[str, Any]] = None
         parent = self._parent
-        if parent.type is InteractionType.component:
-            defer_type = InteractionResponseType.deferred_message_update.value
-        elif parent.type is InteractionType.application_command:
-            defer_type = InteractionResponseType.deferred_channel_message.value
+        if parent.type is InterType.component:
+            defer_type = InterResponseType.deferred_message_update.value
+        elif parent.type is InterType.app_command:
+            defer_type = InterResponseType.deferred_channel_message.value
             if ephemeral:
                 data = {'flags': 64}
 
         if defer_type:
             adapter = async_context.get()
-            await adapter.create_interaction_response(
+            await adapter.create_Inter_response(
                 parent.id, parent.token, session=parent._session, type=defer_type, data=data
             )
             self._responded = True
@@ -428,25 +428,25 @@ class InteractionResponse:
     async def pong(self) -> None:
         """|coro|
 
-        Pongs the ping interaction.
+        Pongs the ping Inter.
 
         This should rarely be used.
 
         Raises
         -------
         HTTPException
-            Ponging the interaction failed.
-        InteractionResponded
-            This interaction has already been responded to before.
+            Ponging the Inter failed.
+        InterResponded
+            This Inter has already been responded to before.
         """
         if self._responded:
-            raise InteractionResponded(self._parent)
+            raise InterResponded(self._parent)
 
         parent = self._parent
-        if parent.type is InteractionType.ping:
+        if parent.type is InterType.ping:
             adapter = async_context.get()
-            await adapter.create_interaction_response(
-                parent.id, parent.token, session=parent._session, type=InteractionResponseType.pong.value
+            await adapter.create_Inter_response(
+                parent.id, parent.token, session=parent._session, type=InterResponseType.pong.value
             )
             self._responded = True
 
@@ -462,7 +462,7 @@ class InteractionResponse:
     ) -> None:
         """|coro|
 
-        Responds to this interaction by sending a message.
+        Responds to this Inter by sending a message.
 
         Parameters
         -----------
@@ -479,7 +479,7 @@ class InteractionResponse:
         view: :class:`nextcord.ui.View`
             The view to send with the message.
         ephemeral: :class:`bool`
-            Indicates if the message should only be visible to the user who started the interaction.
+            Indicates if the message should only be visible to the user who started the Inter.
             If a view is sent with an ephemeral message and it has no timeout set then the timeout
             is set to 15 minutes.
 
@@ -491,11 +491,11 @@ class InteractionResponse:
             You specified both ``embed`` and ``embeds``.
         ValueError
             The length of ``embeds`` was invalid.
-        InteractionResponded
-            This interaction has already been responded to before.
+        InterResponded
+            This Inter has already been responded to before.
         """
         if self._responded:
-            raise InteractionResponded(self._parent)
+            raise InterResponded(self._parent)
 
         payload: Dict[str, Any] = {
             'tts': tts,
@@ -523,11 +523,11 @@ class InteractionResponse:
 
         parent = self._parent
         adapter = async_context.get()
-        await adapter.create_interaction_response(
+        await adapter.create_Inter_response(
             parent.id,
             parent.token,
             session=parent._session,
-            type=InteractionResponseType.channel_message.value,
+            type=InterResponseType.channel_message.value,
             data=payload,
         )
 
@@ -550,8 +550,8 @@ class InteractionResponse:
     ) -> None:
         """|coro|
 
-        Responds to this interaction by editing the original message of
-        a component interaction.
+        Responds to this Inter by editing the original message of
+        a component Inter.
 
         Parameters
         -----------
@@ -575,17 +575,17 @@ class InteractionResponse:
             Editing the message failed.
         TypeError
             You specified both ``embed`` and ``embeds``.
-        InteractionResponded
-            This interaction has already been responded to before.
+        InterResponded
+            This Inter has already been responded to before.
         """
         if self._responded:
-            raise InteractionResponded(self._parent)
+            raise InterResponded(self._parent)
 
         parent = self._parent
         msg = parent.message
         state = parent._state
         message_id = msg.id if msg else None
-        if parent.type is not InteractionType.component:
+        if parent.type is not InterType.component:
             return
 
         payload = {}
@@ -618,11 +618,11 @@ class InteractionResponse:
                 payload['components'] = view.to_components()
 
         adapter = async_context.get()
-        await adapter.create_interaction_response(
+        await adapter.create_Inter_response(
             parent.id,
             parent.token,
             session=parent._session,
-            type=InteractionResponseType.message_update.value,
+            type=InterResponseType.message_update.value,
             data=payload,
         )
 
@@ -632,11 +632,11 @@ class InteractionResponse:
         self._responded = True
 
 
-class _InteractionMessageState:
-    __slots__ = ('_parent', '_interaction')
+class _InterMessageState:
+    __slots__ = ('_parent', '_Inter')
 
-    def __init__(self, interaction: Interaction, parent: ConnectionState):
-        self._interaction: Interaction = interaction
+    def __init__(self, Inter: Inter, parent: ConnectionState):
+        self._Inter: Inter = Inter
         self._parent: ConnectionState = parent
 
     def _get_guild(self, guild_id):
@@ -656,11 +656,11 @@ class _InteractionMessageState:
         return getattr(self._parent, attr)
 
 
-class InteractionMessage(Message):
-    """Represents the original interaction response message.
+class InterMessage(Message):
+    """Represents the original Inter response message.
 
     This allows you to edit or delete the message associated with
-    the interaction response. To retrieve this object see :meth:`Interaction.original_message`.
+    the Inter response. To retrieve this object see :meth:`Inter.original_message`.
 
     This inherits from :class:`nextcord.Message` with changes to
     :meth:`edit` and :meth:`delete` to work.
@@ -669,7 +669,7 @@ class InteractionMessage(Message):
     """
 
     __slots__ = ()
-    _state: _InteractionMessageState
+    _state: _InterMessageState
 
     async def edit(
         self,
@@ -680,7 +680,7 @@ class InteractionMessage(Message):
         files: List[File] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
-    ) -> InteractionMessage:
+    ) -> InterMessage:
         """|coro|
 
         Edits the message.
@@ -719,10 +719,10 @@ class InteractionMessage(Message):
 
         Returns
         ---------
-        :class:`InteractionMessage`
+        :class:`InterMessage`
             The newly edited message.
         """
-        return await self._state._interaction.edit_original_message(
+        return await self._state._Inter.edit_original_message(
             content=content,
             embeds=embeds,
             embed=embed,
@@ -758,10 +758,10 @@ class InteractionMessage(Message):
             async def inner_call(delay: float = delay):
                 await asyncio.sleep(delay)
                 try:
-                    await self._state._interaction.delete_original_message()
+                    await self._state._Inter.delete_original_message()
                 except HTTPException:
                     pass
 
             asyncio.create_task(inner_call())
         else:
-            await self._state._interaction.delete_original_message()
+            await self._state._Inter.delete_original_message()
