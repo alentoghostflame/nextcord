@@ -51,14 +51,15 @@ Add start_embedded_activities As A Permission
 
 Add Guild.bots And Guild.Humans
 
-Removed Support For Japanese Docs
-
 Added A on_raw_typing Event
 
 Make supressing users in a VC throw better errors
 
 Sped Up Aiohttp
 
+Removed
+~~~~~~~
+Removed Support For Japanese Docs
 
 
 .. _vp2p0p0:
