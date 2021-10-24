@@ -21,6 +21,20 @@ Fixed The Create_Sticker glitch
 
 Fixed RTD String Error
 
+Fixed Docstring grammar issue
+
+Fixed Typo In UI Docs
+
+Fix An Issue With Voice_Client Alias
+
+Fixed Alias Not Working On .ext.commands
+
+Fixed Indent List
+
+Fixed Discord Alias Issue
+
+
+
 Additions
 ~~~~~~~~~~
 Working Interaction commands
@@ -32,6 +46,18 @@ Simple Voice recording
 Docs for Selects And Interaction commands
 
 API Docs for Interaction commands
+
+Add start_embedded_activities As A Permission
+
+Add Guild.bots And Guild.Humans
+
+Removed Support For Japanese Docs
+
+Added A on_raw_typing Event
+
+Make supressing users in a VC throw better errors
+
+Sped Up Aiohttp
 
 
 
