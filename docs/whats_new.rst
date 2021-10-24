@@ -11,14 +11,14 @@ Changelog
 This page keeps a detailed human-friendly rendering of what's new and changed
 in specific versions.
 
-.. _vp2p0p0:
-
 v2.0.0
 --------
 Warning: **This Does Not Show The Changes In Discord.pyV2**
 
 Bug Fixes
 ~~~~~~~~~~
+Fixed The Create_Sticker glitch
+Fixed RTD String Error
 
 
 Additions
