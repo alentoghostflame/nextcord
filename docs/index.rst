@@ -29,7 +29,7 @@ Is this your first time using the library? This is the place to get started!
 - **First steps:** :doc:`intro` | :doc:`quickstart` | :doc:`logging`
 - **Working with Nextcord:** :doc:`discord` | :doc:`intents`
 - **Examples:** Many examples are available in the :resource:`repository <examples>`.
-- **Interaction Commands:** :doc:`/interactions`
+- **Interaction Commands:** How to use and make :doc:`/interactions`
 
 Getting help
 --------------
@@ -75,6 +75,5 @@ If you're looking for something related to the project itself, it's here.
 
   whats_new
   version_guarantees
-  migrating
   migrating_2
   interactions
