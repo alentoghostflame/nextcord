@@ -15,11 +15,20 @@ in specific versions.
 
 v2.0.0
 --------
+Warning: **This Does Not Show The Changes In Discord.pyV2**
 
-The changeset for this version are too big to be listed here, for more information please
-see :ref:`the migrating page <migrating_2_0>`. Since the original discord.py repro ended
-its work this is the point where our fork comes in place. Please see
-:ref:`the migrating page <migrating_nextcord>` for more informations.
+Bug Fixes
+~~~~~~~~~~
+
+
+Additions
+~~~~~~~~~~
+Working Interaction commands
+Working Selects and Buttons
+Docs for Buttons, Selects And Interaction commands
+API Docs for Interaction commands
+
+
 
 .. _vp1p7p3:
 
