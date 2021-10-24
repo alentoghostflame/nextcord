@@ -65,7 +65,6 @@ These pages go into great detail about everything the API can do.
   api
   nextcord.ext.commands API Reference <ext/commands/api.rst>
   nextcord.ext.tasks API Reference <ext/tasks/index.rst>
-  Interacton Command's API Reference <client/index.rst>
 
 Meta
 ------
@@ -81,3 +80,4 @@ If you're looking for something related to the project itself, it's here.
   migrating_2
   migrating_to_nextcord
   client/index
+  interactions
