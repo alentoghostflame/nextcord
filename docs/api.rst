@@ -77,7 +77,7 @@ Interaction Commands
     :members:    
     
 .. autoclass:: ApplicationSubcommand
-    :members:    
+    :decorator:    
 
 .. autoclass:: message_command
     :members:   
