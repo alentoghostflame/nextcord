@@ -64,14 +64,14 @@ Command_Client
 Interaction Commands
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: slash_command
+.. automethod:: nextcord.slash_command()
     :decorator:
 
-.. automethod:: ApplicationSubcommand
+.. automethod:: nextcord.ApplicationSubcommand()
     :decorator:
 
-.. automethod:: ApplicationCommand
-    :members:
+.. automethod:: nextcord.ApplicationCommand()
+    :decorator:
 
 .. autoclass:: SlashOption
     :members:
