@@ -79,11 +79,11 @@ Interaction Commands
 .. autoclass:: CommmandCog
     :members:      
 
-.. autoclass:: message_command()
-    :members:   
+.. decorator:: message_command()
+    :decorator:   
     
-.. autoclass:: user_command()
-    :members:
+.. decorator:: user_command()
+    :decorator:
 
 .. autoclass:: CommandArgument()
     :members:    
