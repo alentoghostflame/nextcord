@@ -67,14 +67,14 @@ Interaction Commands
 .. decorator:: slash_command()
     :decorator:
 
-.. decorator:: ApplicationSubcommand()
-    :decorator:
+.. autoclass:: ApplicationSubcommand()
+    :members:
 
-.. decorator:: ApplicationCommand()
-    :decorator:
+.. autoclass:: ApplicationCommand()
+    :members:
 
-.. decorator:: SlashOption
-    :decorator:
+.. autoclass:: SlashOption()
+    :members:
 
 .. autoclass:: CommmandCog
     :members:      
