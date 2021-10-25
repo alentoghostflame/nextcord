@@ -114,3 +114,6 @@ Feature Is **Coming Soon**
 Autocomplete
 -------------
 Feature Is **Coming Soon**
+
+User Commands
+---------------
