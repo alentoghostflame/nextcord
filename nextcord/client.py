@@ -1710,7 +1710,7 @@ class Client:
             payload_unique_id = (response.type, response.name, response.guild_id)
             if payload_app_cmd := self._application_commands_to_bulk_add.get(payload_unique_id):
                 command = payload_app_cmd[1]
-                print(f"    nextcord.Client: Parsing response of command {command.name} for guild {response.guild_id}. ID: {response.id}")
+                print(f"    nextcord.Client: Parsing the response of the {command.name} command for guild {response.guild_id}. ID: {response.id}")
                 command.parse_response(response)
                 # TODO: Move this to own function probably.
                 if command not in self._application_commands:
