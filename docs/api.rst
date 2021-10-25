@@ -42,8 +42,8 @@ Client
     :members:
     :exclude-members: fetch_guilds, event
 
-    .. automethod:: Client.application_command()
-        :decorator:
+    .. automethod:: interaction
+        :async-for:
 
     .. automethod:: Client.event()
         :decorator:
