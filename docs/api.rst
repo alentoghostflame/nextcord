@@ -79,13 +79,13 @@ Interaction Commands
 .. autoclass:: CommmandCog
     :members:      
 
-.. autoclass:: message_command
+.. autoclass:: message_command()
     :members:   
     
-.. autoclass:: user_command
+.. autoclass:: user_command()
     :members:
 
-.. autoclass:: CommandArgument
+.. autoclass:: CommandArgument()
     :members:    
 
 Application Info
