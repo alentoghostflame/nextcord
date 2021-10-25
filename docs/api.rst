@@ -61,6 +61,9 @@ Command_Client
 
 .. attributetable:: CommandClient
     
+    .. automethod:: nextcord.slash_command()
+        :async-for:   
+    
 Interaction Commands
 ~~~~~~~~~~~~~~~~~~~~~
 
