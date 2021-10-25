@@ -60,6 +60,12 @@ Command_Client
 ---------------
 
 .. attributetable:: CommandClient
+    .. automethod:: slash_command
+    :decorator:
+    .. automethod:: ApplicationSubcommand
+    :decorator:
+    .. automethod:: ApplicationCommand
+    :members:
     
 Interaction Commands
 ~~~~~~~~~~~~~~~~~~~~~
@@ -67,17 +73,11 @@ Interaction Commands
 .. autoclass:: SlashOption
     :members:
 
-.. autoclass:: slash_command
-    :decorator:
-
 .. autoclass:: ApplicationCommand
     :members:
 
 .. autoclass:: CommmandCog
-    :members:    
-    
-.. autoclass:: ApplicationSubcommand
-    :decorator:    
+    :members:      
 
 .. autoclass:: message_command
     :members:   
