@@ -61,9 +61,6 @@ Command_Client
 
 .. attributetable:: CommandClient
     
-    .. automethod:: nextcord.slash_command()
-        :async-for:   
-    
 Interaction Commands
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -71,7 +68,7 @@ Interaction Commands
     :members:
 
 .. autoclass:: slash_command
-    :members:
+    :decorator:
 
 .. autoclass:: ApplicationCommand
     :members:
