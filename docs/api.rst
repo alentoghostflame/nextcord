@@ -51,9 +51,13 @@ Client
 ApplicationCommandOption
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: Application
+.. attributetable:: application_command
 
-.. autoclass:: Application
+.. autoclass:: ApplicationOptionChoice
+    :members:
+.. autoclass:: ApplicationCommand
+    :members:
+.. autoclass:: ApplicationctionChoice
     :members:
 
 AutoShardedClient
