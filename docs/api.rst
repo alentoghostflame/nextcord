@@ -64,13 +64,13 @@ Command_Client
 Interaction Commands
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: slash_command()
+.. autoclass:: slash_command()
     :decorator:
 
-.. automethod:: ApplicationSubcommand()
+.. autoclass:: ApplicationSubcommand()
     :decorator:
 
-.. automethod:: ApplicationCommand()
+.. autoclass:: ApplicationCommand()
     :decorator:
 
 .. autoclass:: SlashOption
