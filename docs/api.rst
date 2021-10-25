@@ -42,13 +42,14 @@ Client
     :members:
     :exclude-members: fetch_guilds, event
 
+    .. automethod:: Client.slash_command
+        :decorator:
+
     .. automethod:: Client.event()
         :decorator:
 
     .. automethod:: Client.fetch_guilds
         :async-for:
-    .. automethod:: Client.slash_command
-        :decorator:
 
 AutoShardedClient
 ~~~~~~~~~~~~~~~~~~
