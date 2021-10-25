@@ -47,20 +47,35 @@ Client
 
     .. automethod:: Client.fetch_guilds
         :async-for:
+    
+Command_Client
+~~~~~~~~~~~~~~~
 
-ApplicationCommandOption
-~~~~~~~~~~~~~~~~~~~~~~~~~
+.. attributetable:: CommandClient
 
-.. attributetable:: application_command
-
-.. autoclass:: ApplicationCommandOption
+.. autoclass:: ApplicationCommand
     :members:
     
-.. autoclass:: ApplicationCommandResponse
+.. autoclass:: SlashOption
     :members:
+
+.. autoclass:: slash_command
+    :members:
+
+.. autoclass:: CommmandCog
+    :members:    
     
-.. autoclass:: ApplicationCommandOptionChoice
+.. autoclass:: ApplicationSubcommand
+    :members:    
+
+.. autoclass:: message_command
+    :members:   
+    
+.. autoclass:: user_command
     :members:
+
+.. autoclass:: CommandArgument
+    :members:         
 
 AutoShardedClient
 ~~~~~~~~~~~~~~~~~~
