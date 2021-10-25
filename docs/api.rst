@@ -47,6 +47,8 @@ Client
 
     .. automethod:: Client.fetch_guilds
         :async-for:
+    .. automethod:: Client.slash_command
+        :decorator:
 
 AutoShardedClient
 ~~~~~~~~~~~~~~~~~~
@@ -3299,6 +3301,7 @@ SyncWebhookMessage
     :members:
 
 .. _discord_api_abcs:
+
 
 Abstract Base Classes
 -----------------------
