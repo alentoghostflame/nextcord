@@ -53,11 +53,13 @@ ApplicationCommandOption
 
 .. attributetable:: application_command
 
-.. autoclass:: ApplicationOptionChoice
+.. autoclass:: ApplicationCommandOption
     :members:
-.. autoclass:: ApplicationCommand
+    
+.. autoclass:: ApplicationCommandResponse
     :members:
-.. autoclass:: ApplicationctionChoice
+    
+.. autoclass:: ApplicationCommandOptionChoice
     :members:
 
 AutoShardedClient
