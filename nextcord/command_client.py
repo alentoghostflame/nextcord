@@ -654,6 +654,16 @@ def slash_command(*args, **kwargs):
             raise TypeError("Callback is already an ApplicationCommandRequest.")
         return ApplicationCommand(func, cmd_type=CommandType.chat_input, *args, **kwargs)
     return decorator
+"""
+@nextcord.slash_command(name="name", guild_ids=[guild_id1, guildid2], description="description")
+
+Used to make slash commands in nextcord
+"""
+"""
+@nextcord.SlashOption(name=None, description=None, required=None, choices=None, default=None, channel_types=None)
+
+SlashOption is used for options in interaction command fields
+"""
 
 
 # def slash_command(*args, **kwargs):
