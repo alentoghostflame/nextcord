@@ -47,11 +47,13 @@ Client
 
     .. automethod:: Client.fetch_guilds
         :async-for:
+
 ApplicationCommandOption
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: ApplicationCommandOption
+.. attributetable:: Application
 
-.. autoclass:: ApplicationCommandOption
+.. autoclass:: Application
     :members:
 
 AutoShardedClient
