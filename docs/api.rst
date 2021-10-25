@@ -42,7 +42,7 @@ Client
     :members:
     :exclude-members: fetch_guilds, event
 
-    .. automethod:: Client.slash_command()
+    .. automethod:: Client.application_command()
         :decorator:
 
     .. automethod:: Client.event()
