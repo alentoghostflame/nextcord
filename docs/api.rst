@@ -46,20 +46,31 @@ Client
         :decorator:
 
     .. automethod:: Client.fetch_guilds
-        :async-for:
-    
-Command_Client
-~~~~~~~~~~~~~~~
+        :async-for:     
 
-.. attributetable:: CommandClient
+AutoShardedClient
+~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: ApplicationCommand
+.. attributetable:: AutoShardedClient
+
+.. autoclass:: AutoShardedClient
     :members:
     
+Command_Client
+---------------
+
+.. attributetable:: CommandClient
+    
+Interaction Commands
+~~~~~~~~~~~~~~~~~~~~~
+
 .. autoclass:: SlashOption
     :members:
 
 .. autoclass:: slash_command
+    :members:
+
+.. autoclass:: ApplicationCommand
     :members:
 
 .. autoclass:: CommmandCog
@@ -75,15 +86,7 @@ Command_Client
     :members:
 
 .. autoclass:: CommandArgument
-    :members:         
-
-AutoShardedClient
-~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: AutoShardedClient
-
-.. autoclass:: AutoShardedClient
-    :members:
+    :members:    
 
 Application Info
 ------------------
