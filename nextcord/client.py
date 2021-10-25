@@ -1676,7 +1676,7 @@ class Client:
                 # await app_cmd_callback(interaction)
                 await app_cmd.call_from_interaction(interaction)
             else:
-                print(f"CLIENT.PY: Received an interaction for an application command that isn't registered, hmm. ID: {interaction.data['id']}")
+                print(f"nextcord.Client: Your bot recived a request interaction that isnt registered ID: {interaction.data['id']}")
 
     async def register_bulk_application_commands(self):
         # TODO: Using Bulk upsert seems to delete all commands
@@ -1691,14 +1691,14 @@ class Client:
                 global_payloads_to_bulk.append(payload_app_cmd[0])
 
         if global_payloads_to_bulk:
-            print("CLIENT.PY: Sending Global commands to Discord")
+            print("nextcord.Client: Sending you bots slash commands globally to Discord")
             response_list = await self.http.bulk_upsert_global_commands(self.application_id, global_payloads_to_bulk)
             self._handle_bulk_application_commands(response_list)
 
         if guild_payloads_to_bulk:
-            print("CLIENT.PY: Starting send of Guild commands to Discord.")
+            print("nextcord.Client: We've started to send your interaction commands to discord .")
             for guild_id, payload_list in guild_payloads_to_bulk.items():
-                print(f"  CLIENT.PY: Sending commands to Guild {guild_id}")
+                print(f"  nextcord.Client: Sending commands to Guild {guild_id}")
                 response_list = await self.http.bulk_upsert_guild_commands(self.application_id, guild_id, payload_list)
                 self._handle_bulk_application_commands(response_list)
 
@@ -1710,15 +1710,15 @@ class Client:
             payload_unique_id = (response.type, response.name, response.guild_id)
             if payload_app_cmd := self._application_commands_to_bulk_add.get(payload_unique_id):
                 command = payload_app_cmd[1]
-                print(f"    CLIENT.PY: Parsing response of command {command.name} for guild {response.guild_id}. ID: {response.id}")
+                print(f"    nextcord.Client: Parsing response of command {command.name} for guild {response.guild_id}. ID: {response.id}")
                 command.parse_response(response)
                 # TODO: Move this to own function probably.
                 if command not in self._application_commands:
                     self._application_commands.append(command)
                 self._registered_application_commands[response.id] = command
             else:
-                raise ValueError(f"What the FUCK is going on, Payload ID {payload_app_cmd} doesn't correspond to "
-                                 f"anything in the dict of commands to bulk add!")  # TODO: Clean up language.
+                raise ValueError(f"Your bots Payload ID {payload_app_cmd} doesn't correspond to "
+                                 f"anything in the dict of commands to bulk add") 
 
     def add_application_command_to_bulk(self, command: ApplicationCommand):
         payload_list = command.payload
@@ -1801,5 +1801,5 @@ class Client:
                 if response.id not in to_remove:
                     to_remove.append(response.id)
         except Forbidden:
-            print(f"CLIENT.PY:we don't have command permission for guild {guild_id}")
+            print(f"nextcord.Client: Your bot currently has no permission to make application commands in {guild_id}")
 
