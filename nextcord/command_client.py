@@ -148,6 +148,31 @@ class CommandArgument(SlashOption):
 
 
 class ApplicationSubcommand:
+    """
+    Used To Make Sub Commands In Nextcord
+    
+    Example:
+    
+    .. codeblock:: python3
+    
+        @bot.slash_command(guild_ids=[guild1, guild2])
+        async def main(interaction):
+            await interaction.reponse.send_message("Never Called If You Have Sub-Commands")
+            
+        @main.subcommmand()
+        async def sub1(interaction):
+            await interaction.response.send_message("This is subcommand 1!")
+        
+        @main.subcommand(name="sub2", description="This is subcommand 2 tricked out!")
+        async def subcommand_two(interaction: Interaction,
+                                arg1: str = SlashOption(name="argument1", description="The first argument."),
+                                arg2: str = SlashOption(description="The second argument!", default=None)):
+            await interaction.response.send_message(f"This is subcommand 2 with arg1 {arg1} and arg2 {arg2}")
+      
+    Taken From The Interactions Guide
+    
+    
+    """
     def __init__(self, callback: Callable, parent: Optional[Union[ApplicationCommand, ApplicationSubcommand]],
                  cmd_type: Union[CommandType, CommandOptionType], cog_parent: Optional[CommandCog] = None,
                  name: str = "", description: str = "", required: Optional[bool] = None, guild_ids: List[int] = None,
@@ -322,6 +347,15 @@ class ApplicationSubcommand:
 
 
 class ApplicationCommand(ApplicationSubcommand):
+        """
+Used to make slash commands in nextcord
+Example:
+
+.. code-block:: python3
+       
+    @Bot.slash_command(name="name", guild_ids=[guild1, guild2])     
+
+    """
     def __init__(self, callback: Callable, cmd_type: CommandType,
                  name: str = "", description: str = "", guild_ids: List[int] = None, force_global: bool = False,
                  default_permission: Optional[bool] = None):
@@ -649,15 +683,6 @@ class CommandClient(Client):
 
 
 def slash_command(*args, **kwargs):
-    """
-Used to make slash commands in nextcord
-Example:
-
-.. code-block:: python3
-       
-    @Bot.slash_command(name="name", guild_ids=[guild1, guild2])     
-
-    """
     def decorator(func: Callable):
         if isinstance(func, ApplicationCommand):
             raise TypeError("Callback is already an ApplicationCommandRequest.")
