@@ -323,12 +323,12 @@ class ApplicationSubcommand:
 
 class ApplicationCommand(ApplicationSubcommand):
         """
-Used to make slash commands in nextcord
-Example:
+    Used to make slash commands in nextcord
+    Example:
 
-.. code-block:: python3
+    .. code-block:: python3
        
-    @Bot.slash_command(name="name", guild_ids=[guild1, guild2])     
+        @Bot.slash_command(name="name", guild_ids=[guild1, guild2])     
 
     """
     def __init__(self, callback: Callable, cmd_type: CommandType,
