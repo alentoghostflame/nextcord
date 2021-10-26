@@ -29,7 +29,7 @@ Is this your first time using the library? This is the place to get started!
 - **First steps:** :doc:`intro` | :doc:`quickstart` | :doc:`logging`
 - **Working with Nextcord:** :doc:`discord` | :doc:`intents`
 - **Examples:** Many examples are available in the :resource:`repository <examples>`.
-- **Interaction Commands:** How to use and make :doc:`/interactions`
+- **Interaction Commands:** Interaction Tutorial :doc:`interactions` Migrating: :doc:`migrating_to_slash_commands`
 
 Getting help
 --------------
