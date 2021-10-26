@@ -170,8 +170,6 @@ class ApplicationSubcommand:
             await interaction.response.send_message(f"This is subcommand 2 with arg1 {arg1} and arg2 {arg2}")
       
     Taken From The Interactions Guide
-    
-    
     """
     def __init__(self, callback: Callable, parent: Optional[Union[ApplicationCommand, ApplicationSubcommand]],
                  cmd_type: Union[CommandType, CommandOptionType], cog_parent: Optional[CommandCog] = None,
