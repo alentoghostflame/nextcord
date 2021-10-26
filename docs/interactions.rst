@@ -20,7 +20,7 @@ This right here is a simple ping pong Command made with Nextcords slash feature.
 
 .. code-block:: python3
 
-    @bot.slash_command(name="ping", guild_ids=[GUILD_ID1, GUILDID2])
+    @bot.slash_command(name="ping")
     async def ping(interaction):
         await interaction.response.send_message("Pong!")
         
@@ -35,7 +35,7 @@ As shown in the demistration below you make a main slash command or a Dummy slas
 
 .. code-block:: python3
 
-    @bot.slash_command(guild_ids=[GUILD_ID1, GUILDID2])
+    @bot.slash_command()
     async def main(interaction):
         await interaction.response.send_message("This will never get called if this has subcommands.")
 
@@ -59,7 +59,7 @@ Nextcord's implementation of slash commands has fields and is very simple, In th
 
 .. code-block:: python3
      
-     @bot.slash_command(name="help", guild_ids=[guildid1, guildid2])
+     @bot.slash_command(name="help")
      async def help(interaction: Interaction,
                     setting: str = SlashOption(name=settings, description="Configure Your Settings")
          if setting == music
@@ -113,14 +113,14 @@ How To Make Context Menu Commands
 
 .. code-block:: python3
   
-   @slash_command(name="dump", guild_ids=[GUILD_ID])
+   @slash_command(name="dump")
     async def do_member(self, interaction: Interaction, member: nextcord.Member):
         await interaction.response.send_message(f"Member found: {member}")
 
-    @user_command(name="dump", guild_ids=[GUILD_ID])
+    @user_command(name="dump")
     async def userdump(self, interaction, member):
         await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
 
-    @message_command(name="dump", guild_ids=[GUILD_ID])
+    @message_command(name="dump")
     async def messagedump(self, interaction, message: Message):
         await interaction.response.send_message(f"Data Dump: {interaction.data}")
