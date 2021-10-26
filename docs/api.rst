@@ -64,7 +64,7 @@ Command_Client
 Interaction Commands
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. decorator:: slash_command(name="name")
+.. autofunction:: slash_command(name="name")
     :decorator:
 
 .. decorator:: subcommand()
