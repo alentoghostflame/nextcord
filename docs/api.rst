@@ -64,6 +64,16 @@ Command_Client
 Interaction Commands
 ~~~~~~~~~~~~~~~~~~~~~
 
+.. autoclass:: Client
+    :members:
+    :exclude-members: slash_command, subcommand
+    
+    .. automethod:: Client.slash_command
+        :decorator:
+    
+    .. automethod:: Client.subcommand
+        :decorator:
+
 .. autofunction:: slash_command(name="name")
     :decorator:
 
