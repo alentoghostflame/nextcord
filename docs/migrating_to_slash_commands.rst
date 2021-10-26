@@ -11,7 +11,7 @@ One of the biggest difference's is the deprevation of CTX(Context) in the use of
 
 Old Commands:
 
-.. codeblock:: python3
+.. code-block:: python3
     
     @bot.command()
     async def example(ctx):
@@ -21,7 +21,7 @@ Old Commands:
 
 New Commands:
 
-.. codeblock:: python3
+.. code-block:: python3
     
     @bot.slash_command(name="example", guild_ids=[guild1, guild2])
     async def example(interaction):
