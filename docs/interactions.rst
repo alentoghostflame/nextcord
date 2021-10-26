@@ -20,7 +20,7 @@ This right here is a simple ping pong Command made with Nextcords slash feature.
 
 .. code-block:: python3
 
-    @bot.slash_command(name="ping", guild_ids=[GUILD_ID])
+    @bot.slash_command(name="ping", guild_ids=[GUILD_ID1, GUILDID2])
     async def ping(interaction):
         await interaction.response.send_message("Pong!")
         
@@ -35,7 +35,7 @@ As shown in the demistration below you make a main slash command or a Dummy slas
 
 .. code-block:: python3
 
-    @bot.slash_command(guild_ids=[GUILD_ID])
+    @bot.slash_command(guild_ids=[GUILD_ID1, GUILDID2])
     async def main(interaction):
         await interaction.response.send_message("This will never get called if this has subcommands.")
 
@@ -59,11 +59,13 @@ Nextcord's implementation of slash commands has fields and is very simple, In th
 
 .. code-block:: python3
      
-     @bot.slash_command(name="help", guild_ids="GUILD_ID")
+     @bot.slash_command(name="help", guild_ids=[guildid1, guildid2])
      async def help(interaction: Interaction,
-                    settings: str = SlashOption(name=settings, description="Your Current Help Settings")
-                    music: str = SlashOption(name=music, description="Your Music Settings")):
-         await interaction.response.send_message(f"") 
+                    setting: str = SlashOption(name=settings, description="Configure Your Settings")
+         if setting == music
+            await interaction.response.send_message(f"MOOSIC")
+         if setting == moderation
+            await interaction.response.send_message(f"Mods party? POOG")
 
 
 How To Make Slash Commands In Cogs
