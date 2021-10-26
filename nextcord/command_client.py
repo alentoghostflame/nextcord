@@ -330,7 +330,7 @@ class ApplicationCommand(ApplicationSubcommand):
        
         @Bot.slash_command(name="name", guild_ids=[guild1, guild2])     
 
-    """
+        """
     def __init__(self, callback: Callable, cmd_type: CommandType,
                  name: str = "", description: str = "", guild_ids: List[int] = None, force_global: bool = False,
                  default_permission: Optional[bool] = None):
