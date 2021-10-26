@@ -23,7 +23,7 @@ New Commands:
 
 .. code-block:: python3
     
-    @bot.slash_command(name="example", guild_ids=[guild1, guild2])
+    @bot.slash_command()
     async def example(interaction):
       await interaction.response.send_message("Slash Commands POOOG!")
       
