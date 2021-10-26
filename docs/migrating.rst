@@ -5,9 +5,9 @@
 Migrating to nextcord
 ======================
 
-Changing to v2.0 represents different breaking changes we needed to make. We did not only needed to fork the
+Changing to nextcord represents different breaking changes we needed to make. We did not only needed to fork the
 original discord.py repository but adapt changes in the Discord API in order of supporting its latest features,
-to work with threads, buttons and commands.
+to work with threads, buttons, commands and slash commands.
 
 Overview
 -----------------------
