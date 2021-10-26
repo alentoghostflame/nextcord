@@ -106,8 +106,8 @@ Feature Is **Coming Soon**
 User Commands
 ---------------
 
-Introduction Into Context Menu Commands
-----------------------------------------
+How To MakeContext Menu Commands
+------------------------------------
 
 .. code-block:: python3
   
@@ -122,6 +122,3 @@ Introduction Into Context Menu Commands
     @message_command(name="dump", guild_ids=[GUILD_ID])
     async def messagedump(self, interaction, message: Message):
         await interaction.response.send_message(f"Data Dump: {interaction.data}")
-
-How To Make Advanced Context Menu's
-------------------------------------
