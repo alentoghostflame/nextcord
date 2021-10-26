@@ -13,7 +13,7 @@ in specific versions.
 
 v2.0.0
 --------
-Warning: **This Does Not Show The Changes In Discord.pyV2**
+Warning: **This Does Not Show The Changes In discord.py V2**
 
 Bug Fixes
 ~~~~~~~~~~
@@ -39,9 +39,7 @@ Additions
 ~~~~~~~~~~
 Working Interaction commands
 
-Working Selects
-
-Simple Voice recording < Remove If Not Merged By Launch
+Simple Voice recording 
 
 Docs for Selects And Interaction commands
 
