@@ -29,5 +29,7 @@ New Commands:
       
 **Note:** You have to respond to messages using replys      
 
+For more info on interaction Look at the API Docs
+
 Converting Normal Commands To Slash Commands
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
