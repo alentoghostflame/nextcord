@@ -64,17 +64,7 @@ Command_Client
 Interaction Commands
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: Client
-    :members:
-    :exclude-members: slash_command, subcommand
-    
-    .. automethod:: Client.slash_command
-        :decorator:
-    
-    .. automethod:: Client.subcommand
-        :decorator:
-
-.. autofunction:: slash_command(name="name")
+.. autofunction:: slash_command(guild_ids=[id1, id2])
     :decorator:
 
 .. decorator:: subcommand()
