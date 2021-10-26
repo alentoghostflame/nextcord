@@ -108,7 +108,7 @@ Feature Is **Coming Soon**
 User Commands
 ---------------
 
-How To MakeContext Menu Commands
+How To Make Context Menu Commands
 ------------------------------------
 
 .. code-block:: python3
