@@ -75,5 +75,6 @@ If you're looking for something related to the project itself, it's here.
 
   whats_new
   version_guarantees
-  migrating_2
+  migrating
   interactions
+  migrating_to_slash_commands
