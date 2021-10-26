@@ -655,7 +655,7 @@ def slash_command(*args, **kwargs):
         return ApplicationCommand(func, cmd_type=CommandType.chat_input, *args, **kwargs)
     return decorator
 """
-@nextcord.slash_command(name="name", guild_ids=[guild_id1, guildid2], description="description")
+@Client.slash_command(name="name", guild_ids=[guild_id1, guildid2], description="description")
 
 Used to make slash commands in nextcord
 """
