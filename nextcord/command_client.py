@@ -649,7 +649,7 @@ class CommandClient(Client):
 
 
 def slash_command(*args, **kwargs):
-"""
+    """
 Used to make slash commands in nextcord
 Example:
 
@@ -657,7 +657,7 @@ Example:
        
     @Bot.slash_command(name="name", guild_ids=[guild1, guild2])     
 
-"""
+    """
     def decorator(func: Callable):
         if isinstance(func, ApplicationCommand):
             raise TypeError("Callback is already an ApplicationCommandRequest.")
