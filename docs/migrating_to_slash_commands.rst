@@ -9,7 +9,7 @@ Differences
 ------------
 One of the biggest difference's is the deprevation of CTX(Context) in the use of interaction
 
-Old Command:
+Old Commands:
 
 .. codeblock:: python3
     
