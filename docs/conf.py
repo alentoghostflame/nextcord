@@ -146,7 +146,7 @@ pygments_style = 'friendly'
 # Nitpicky mode options
 nitpick_ignore_files = [
   "migrating",
-  "migrating_to_slash_commands,
+  "migrating_to_slash_commands",
   "whats_new",
   "quickstart",
 ]
