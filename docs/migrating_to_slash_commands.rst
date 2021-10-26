@@ -8,6 +8,7 @@ Migrating To Slash Commands
 Differences
 ------------
 One of the biggest difference's is the deprevation of CTX(Context) in the use of interaction
+
 Old Command:
 
 .. codeblock:: python3
@@ -17,6 +18,7 @@ Old Command:
       await ctx.send("Hey!")
       
 **This Way Is Deprecated For Slash Commands**
+
 New Commands:
 
 .. codeblock:: python3
