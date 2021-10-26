@@ -1,8 +1,8 @@
 .. currentmodule:: nextcord
 
-.. _migrating_2_0:
+.. _migrating_to_nextcord:
 
-Migrating to v2.0
+Migrating to nextcord
 ======================
 
 Changing to v2.0 represents different breaking changes we needed to make. We did not only needed to fork the
