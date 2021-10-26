@@ -5,7 +5,7 @@
 .. _client_index:
    
 Interaction Commands
-=====================
+======================
 
 As discord have added interaction commands a feature with alot of possiblity's and idea's we at nextcord have decided to add them to our fleet of features,
 
@@ -14,7 +14,7 @@ This doc will explain the innerworkings and how to use interaction commmands.
 We suggest you learn how to make regular commands before looking through here.
 
 How To Make A Simple Interaction Command
------------------------------------------
+------------------------------------------
 
 This right here is a simple ping pong Command made with Nextcords slash feature.
 
@@ -27,7 +27,7 @@ This right here is a simple ping pong Command made with Nextcords slash feature.
 The way it works is that you use the slash_command fuction to interact with the DiscordAPI "name" is the name of your slash command, And guild_ids is used to limit the guilds that the slash command is available also useful for testing as slash commands can take up to an hour to register
 
 How To Use Sub-Commands
-------------------------
+-------------------------
 
 The way sub-commands work is that you will make a normal slash command that will never be called then make the sub-commands and have them do the work of real slash commands, There is no difference to slash commands and sub-commands, The Only thing you will need to change is functions. 
 
@@ -98,7 +98,7 @@ Feature Is **Coming Soon**
 
 
 Role And User Permissions
---------------------------
+---------------------------
 Feature Is **Coming Soon**
 
 Autocomplete
