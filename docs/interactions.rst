@@ -85,18 +85,6 @@ Show below is an example of a simple command running in a cog, It is very basic 
     async def slash_example_cog_command(self, interaction):
         await interaction.response.send_message("Hello i am a slash command in a cog!")
 
-    @slash_command(name="dump", guild_ids=[GUILD_ID])
-    async def do_member(self, interaction: Interaction, member: nextcord.Member):
-        await interaction.response.send_message(f"Member found: {member}")
-
-    @user_command(name="dump", guild_ids=[GUILD_ID])
-    async def userdump(self, interaction, member):
-        await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
-
-    @message_command(name="dump", guild_ids=[GUILD_ID])
-    async def messagedump(self, interaction, message: Message):
-        await interaction.response.send_message(f"Data Dump: {interaction.data}")
-
   bot.add_cog(ExampleCog())
   bot.run(TOKEN)
 
@@ -120,6 +108,20 @@ User Commands
 
 Introduction Into Context Menu Commands
 ----------------------------------------
+
+.. code-block:: python3
+  
+   @slash_command(name="dump", guild_ids=[GUILD_ID])
+    async def do_member(self, interaction: Interaction, member: nextcord.Member):
+        await interaction.response.send_message(f"Member found: {member}")
+
+    @user_command(name="dump", guild_ids=[GUILD_ID])
+    async def userdump(self, interaction, member):
+        await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
+
+    @message_command(name="dump", guild_ids=[GUILD_ID])
+    async def messagedump(self, interaction, message: Message):
+        await interaction.response.send_message(f"Data Dump: {interaction.data}")
 
 How To Make Advanced Context Menu's
 ------------------------------------
