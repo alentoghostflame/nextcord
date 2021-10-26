@@ -108,7 +108,7 @@ class CommandArgument(SlashOption):
         if self.channel_types and self.type is not CommandOptionType.channel:
             raise ValueError("channel_types can only be given when the var is typed as nextcord.abc.GuildChannel")
 
-    def handle_argument(self, state: ConnectionState, argument: Any, interaction: Interaction) -> Any:
+    def handle_slash_argument(self, state: ConnectionState, argument: Any, interaction: Interaction) -> Any:
         if self.type is CommandOptionType.channel:
             return state.get_channel(int(argument))
         elif self.type is CommandOptionType.user:  # TODO: Brutally test please.
@@ -125,6 +125,12 @@ class CommandArgument(SlashOption):
         elif self.type is Message:  # TODO: Brutally test please.
             return state._get_message(int(argument))
         return argument
+
+    def handle_message_argument(self, *args):
+        raise NotImplementedError  # TODO: Even worth doing? We pass in what we know already.
+
+    def handle_user_argument(self, *args):
+        raise NotImplementedError  # TODO: Even worth doing? We pass in what we know already.
 
     @property
     def payload(self) -> dict:
@@ -278,7 +284,7 @@ class ApplicationSubcommand:
             if arg_data["name"] in uncalled_args:
                 uncalled_args.pop(arg_data["name"])
                 kwargs[self.arguments[arg_data["name"]].functional_name] = \
-                    self.arguments[arg_data["name"]].handle_argument(state, arg_data["value"], interaction)
+                    self.arguments[arg_data["name"]].handle_slash_argument(state, arg_data["value"], interaction)
             else:
                 # TODO: Handle this better.
                 raise NotImplementedError(f"An argument was provided that wasn't already in the function, did you"
@@ -468,6 +474,17 @@ class ApplicationCommand(ApplicationSubcommand):
         return ret
 
     @property
+    def global_payload(self) -> dict:
+        if not self.is_global:
+            raise NotImplementedError
+        partial_payload = super().payload
+        if self.type is not CommandType.chat_input and "options" in partial_payload:
+            partial_payload.pop("options")
+        if self.default_permission is not None:
+            partial_payload["default_permission"] = self.default_permission
+        return partial_payload
+
+    @property
     def is_guild(self) -> bool:
         return self._is_guild
 
@@ -491,6 +508,90 @@ class ApplicationCommand(ApplicationSubcommand):
                 ret.add((self.name, self.type.value, guild_id))
         return ret
 
+    def reverse_check_against_raw_payload(self, raw_payload: dict, guild_id: Optional[int]) -> bool:
+        modded_payload = raw_payload.copy()
+        modded_payload.pop("id")
+        for our_payload in self.payload:
+            # if our_payload.get("guild_id", None) == raw_payload.get("guild_id", None):
+            if our_payload.get("guild_id", None) == guild_id:
+                print(f"nextcord.command_client: {our_payload.get('guild_id', None)} == {guild_id}")
+                if self._recursive_item_check(modded_payload, our_payload):
+                    return True
+        return False
+
+    def check_against_raw_payload(self, raw_payload: dict, guild_id: Optional[int]) -> bool:
+        our_payloads = self.payload
+        for our_payload in our_payloads:
+            # if our_payload.get("guild_id", None) == (int(guild_id) if (guild_id := raw_payload.get("guild_id", None)) else guild_id):
+            if our_payload.get("guild_id", None) == guild_id:
+                print(f"nextcord.command_client: {our_payload.get('guild_id', None)} == {guild_id}")
+                # print(f"nextcord.command_client: {our_payload}")
+                # print(f"nextcord.command_client: {raw_payload}")
+                if self._recursive_item_check(our_payload, raw_payload):
+                    return True
+            # else:
+            #     print(f"nextcord.command_client: Skipping payload: {our_payload.get('guild_id', None)} != {(int(guild_id) if (guild_id := raw_payload.get('guild_id', None)) else guild_id)}")
+        return False
+
+    def _recursive_item_check(self, item1, item2) -> bool:
+        if isinstance(item1, dict) and isinstance(item2, dict):
+            for key, item in item1.items():
+                if key == "value":
+                    print(f"nextcord.command_client: Key value found, ignoring.")
+                elif key not in item2:
+                    print(f"nextcord.command_client: Recursive dict check failed: key {key} not in item2.")
+                    return False
+                elif not self._recursive_item_check(item, item2[key]):
+                    print("nextcord.command_client: Recursive dict check failed.")
+                    return False
+        elif isinstance(item1, list) and isinstance(item2, list):
+            # if len(item1) == len(item2):
+            #     for i in range(len(item1)):
+            #         if not self._recursive_item_check(item1[i], item2[i]):
+            #             print("nextcord.command_client: Recursive list check failed.")
+            #             return False
+            # else:
+            #     print(f"nextcord.command_client: Recursive list length check failed: {len(item1)} != {len(item2)}")
+            #     return False
+            for our_item in item1:
+                if not self._recursive_check_item_against_list(our_item, item2):
+                    return False
+                # if isinstance(our_item, list):
+                #     raise NotImplementedError
+                # elif isinstance(our_item, dict):
+                #     for their_item in item2:
+                #         if isinstance(their_item, list):
+                #             raise NotImplementedError
+                #         elif isinstance(their_item, dict):
+                #
+                #         else:
+                #             raise NotImplementedError
+                # else:
+                #     raise NotImplementedError
+
+        elif item1 != item2:
+            print(f"nextcord.command_client: Recursive item check failed: {item1} != {item2}")
+            return False
+        return True
+
+    def _recursive_check_item_against_list(self, item1, list2: list) -> bool:
+        if isinstance(item1, list):
+            raise NotImplementedError
+        elif isinstance(item1, dict):
+            for item2 in list2:
+                if isinstance(item2, list):
+                    raise NotImplementedError
+                elif isinstance(item2, dict):
+                    if self._recursive_item_check(item1, item2):
+                        return True
+                else:
+                    raise NotImplementedError
+        else:
+            raise NotImplementedError
+        return False
+
+
+
     # def get_complex_signature(self, guild_id: Optional[int]) -> Optional[Tuple[Tuple[str, int, Optional[int]], ]]:
     #     if (guild_id is None and self.is_global) or (guild_id in self.guild_ids):
     #         ret = [self.get_signature(guild_id)]
@@ -509,7 +610,6 @@ class CommandCog:
     # TODO: I get it's a terrible name, I just don't want it to duplicate current Cog right now.
     __cog_application_commands__: Dict[int, ApplicationCommand]
     __cog_to_register__: List[ApplicationCommand]
-
 
     def __new__(cls, *args, **kwargs):
         new_cls = super(CommandCog, cls).__new__(cls)
@@ -569,7 +669,7 @@ class CommandClient(Client):
                 for cmd in to_register:
                     print(f"REG COG CMD:     {cmd.name}")
                     # await self.register_command(cmd)
-                    self._internal_add_application_command(cmd)
+                    self._internal_add_application_command(cmd, add_to_bulk=True)
 
     # async def register_command(self, command: ApplicationCommand):
     #     # TODO: Make into bulk registration. Also look into having commands be both guild and global.
@@ -614,7 +714,7 @@ class CommandClient(Client):
             result = user_command(*args, **kwargs)(func)
 
             # self.add_application_command_request(result)
-            self._internal_add_application_command(result)
+            self._internal_add_application_command(result, add_to_bulk=True)
 
             return result
         return decorator
@@ -624,8 +724,7 @@ class CommandClient(Client):
             result = message_command(*args, **kwargs)(func)
 
             # self.add_application_command_request(result)
-            self._internal_add_application_command(result)
-
+            self._internal_add_application_command(result, add_to_bulk=True)
             return result
         return decorator
 
@@ -634,7 +733,7 @@ class CommandClient(Client):
             result = slash_command(*args, **kwargs)(func)
 
             # self.add_application_command_request(result)
-            self._internal_add_application_command(result)
+            self._internal_add_application_command(result, add_to_bulk=True)
             return result
         return decorator
 
