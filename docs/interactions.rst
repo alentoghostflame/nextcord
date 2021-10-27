@@ -78,17 +78,11 @@ Show below is an example of a simple command running in a cog, It is very basic 
     def __init__(self):
         self.count = 0
 
-    @commands.command(name="cogexample")
-    async def example_cog_command(self, context: commands.Context):
-        await context.send("Hi there i am a normal command!")
-        print(f"COGEXAMPLE: {context.guild.members}")
-
     @slash_command(name="cogexample", guild_ids=[GUILD_ID])
     async def slash_example_cog_command(self, interaction):
         await interaction.response.send_message("Hello i am a slash command in a cog!")
 
   bot.add_cog(ExampleCog())
-  bot.run(TOKEN)
 
 The example shown above responds to a user when they do a slash command, It is very identical to a normal slash command and to normal commands in general.
 
