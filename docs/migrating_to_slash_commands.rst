@@ -35,14 +35,9 @@ For more info on interaction Look at the API Docs
 
 Converting Normal Commands To Slash Commands
 ---------------------------------------------
-Step 1 
-~~~~~~~
+* Item 1.
 Your gonna want to replace 'command' or 'event' with slash_command
-
-Step 2
-~~~~~~~
-Replace CTX With interaction and replace anyother's next to ctx(for more info look at the API docs)
-
-Step 3
-~~~~~~~
+* Item 2
+Replace CTX With interaction and replace anyother next to ctx(for more info look at the API docs)
+* Item 3
 Enjoy Your Slashy Bot
