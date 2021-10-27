@@ -86,10 +86,31 @@ Show below is an example of a simple command running in a cog, It is very basic 
 
 The example shown above responds to a user when they do a slash command, It is very identical to a normal slash command and to normal commands in general.
 
-How To Use Advanced Cog Features
----------------------------------
-Feature Is **Coming Soon**
+How To Make Context Menu Commands
+------------------------------------
+Context menu commmands display commands on a menu of a message/user
+User Commands
+~~~~~~~~~~~~~~
+What you see below is a example of a simple user command, 
+Made by alento it's a user dump command that dumps user data
 
+.. code-block:: python3
+
+    @user_command(name="dump")
+    async def userdump(self, interaction, member):
+        await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
+
+Message Commands
+~~~~~~~~~~~~~~~~~
+What you see below is a example of a simple message command, 
+Made by alento it's a message dump command that dumps message data
+
+.. code-block:: python3
+
+    @message_command(name="dump")
+    async def messagedump(self, interaction, message: Message):
+        await interaction.response.send_message(f"Data Dump: {interaction.data}")
+        
 
 Role And User Permissions
 ---------------------------
@@ -98,23 +119,3 @@ Feature Is **Coming Soon**
 Autocomplete
 -------------
 Feature Is **Coming Soon**
-
-User Commands
----------------
-
-How To Make Context Menu Commands
-------------------------------------
-
-.. code-block:: python3
-  
-   @slash_command(name="dump")
-    async def do_member(self, interaction: Interaction, member: nextcord.Member):
-        await interaction.response.send_message(f"Member found: {member}")
-
-    @user_command(name="dump")
-    async def userdump(self, interaction, member):
-        await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
-
-    @message_command(name="dump")
-    async def messagedump(self, interaction, message: Message):
-        await interaction.response.send_message(f"Data Dump: {interaction.data}")
