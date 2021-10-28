@@ -80,10 +80,7 @@ Interaction Commands
     :decorator:   
     
 .. decorator:: user_command()
-    :decorator:
-
-.. autoclass:: CommandArgument()
-    :members:    
+    :decorator: 
 
 Application Info
 ------------------
