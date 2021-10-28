@@ -335,6 +335,28 @@ class ApplicationSubcommand:
         return ret
 
     def subcommand(self, **kwargs):
+        """ nextcord subcommands
+        
+        A function that allows for nextcord slash commands
+        
+        example:
+        
+        .. code-block:: python3
+            
+            @bot.slash_command()
+            async def main(interaction):
+                await interaction.response.send_message("This will never get called if this has subcommands.")
+
+
+            @main.subcommand()
+            async def sub1(interaction):
+                await interaction.response.send_message("This is subcommand 1!")
+            
+            @main.subcommand()
+            async def sub2(interaction):
+                await interaction.response.send_message("This is subcommand 2!")   
+        
+        """
         def decorator(func: Callable):
             result = ApplicationSubcommand(func, self, CommandOptionType.sub_command, **kwargs)
             self.children[result.name] = result
