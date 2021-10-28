@@ -99,7 +99,7 @@ Made by alento it's a user dump command that dumps user data
 .. code-block:: python3
 
     @bot.user_command(name="dump")
-    async def userdump(self, interaction, member):
+    async def userdump(interaction, member):
         await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
 
 Message Commands
@@ -110,7 +110,7 @@ Made by alento it's a message dump command that dumps message data
 .. code-block:: python3
 
     @bot.message_command(name="dump")
-    async def messagedump(self, interaction, message: Message):
+    async def messagedump(interaction, message: Message):
         await interaction.response.send_message(f"Data Dump: {interaction.data}")
         
 
