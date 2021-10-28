@@ -22,7 +22,7 @@ Module to allow for backwards compatibility for existing code and extensions
 
 from nextcord import *
 
-__title__ = 'nextcord'
+__title__ = 'discord'
 __author__ = 'tag-epic & Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-2021 Rapptz And 2021-present tag-epic'
