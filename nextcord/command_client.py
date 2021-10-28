@@ -710,7 +710,7 @@ class CommandClient(Client):
         self._cogs.append(cog)
 
     def user_command(self, *args, **kwargs):
-           """ nextcord User Command Client
+    """ nextcord User Command Client
     The User Command Client For nextcord
     
     example:
@@ -720,7 +720,7 @@ class CommandClient(Client):
         @bot.user_command(name="dump")
         async def userdump(self, interaction, member):
             await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
-           """
+    """
         def decorator(func: Callable):
             result = user_command(*args, **kwargs)(func)
 
@@ -731,7 +731,7 @@ class CommandClient(Client):
         return decorator
 
     def message_command(self, *args, **kwargs):
-            """ nextcord Message Command Client
+    """ nextcord Message Command Client
     The Message Command Client For nextcord
     
     example:
@@ -742,7 +742,7 @@ class CommandClient(Client):
         async def messagedump(self, interaction, message: Message):
             await interaction.response.send_message(f"Data Dump: {interaction.data}")
     
-            """
+     """
         def decorator(func: Callable):
             result = message_command(*args, **kwargs)(func)
 
