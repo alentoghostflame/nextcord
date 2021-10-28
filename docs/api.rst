@@ -60,9 +60,6 @@ Command_Client
 ---------------
 
 .. attributetable:: CommandClient
-    
-Interaction Commands
-~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: slash_command(guild_ids=[id1, id2])
     :decorator:
