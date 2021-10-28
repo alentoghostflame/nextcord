@@ -720,7 +720,7 @@ class CommandClient(Client):
         @bot.user_command(name="dump")
         async def userdump(self, interaction, member):
             await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
-    """
+        """
         def decorator(func: Callable):
             result = user_command(*args, **kwargs)(func)
 
@@ -742,7 +742,7 @@ class CommandClient(Client):
         async def messagedump(self, interaction, message: Message):
             await interaction.response.send_message(f"Data Dump: {interaction.data}")
     
-    """
+        """
         def decorator(func: Callable):
             result = message_command(*args, **kwargs)(func)
 
