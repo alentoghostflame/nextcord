@@ -1,9 +1,9 @@
 import nextcord
 from nextcord.ext import commands
 
-client = commands.Bot()
+bot = commands.Bot()
 
-@client.slash_command(guild_ids=[GUILD_ID]) # Making the command and limiting the guilds
+@bot.slash_command(guild_ids=[GUILD_ID]) # Making the command and limiting the guilds
 async def main(interaction): #passing through interaction and indentifing the sub-command group name
     await interaction.response.send_message("This will never get called if this has subcommands.") # An Function Never Called
 
@@ -18,5 +18,8 @@ async def subcommand_two(interaction: Interaction, # passing in interaction
                         arg1: str = SlashOption(name="argument1", description="The first argument."), # Field 1
                         arg2: str = SlashOption(description="The second argument!", default=None)): # Field 2
     await interaction.response.send_message(f"This is subcommand 2 with arg1 {arg1} and arg2 {arg2}") # Responding With The Args/Fields
+    
+    
+bot.run("TOKEN")    
 
 
