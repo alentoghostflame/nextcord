@@ -29,7 +29,22 @@ import logging
 import signal
 import sys
 import traceback
-from typing import Any, Callable, Coroutine, Dict, Generator, List, Optional, Sequence, TYPE_CHECKING, Tuple, TypeVar, Union, Type, Iterable
+from typing import (
+    Any,
+    Callable,
+    Coroutine,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    Sequence,
+    TYPE_CHECKING,
+    Tuple,
+    TypeVar,
+    Union,
+    Type,
+    Iterable,
+)
 
 
 import aiohttp
@@ -73,14 +88,13 @@ if TYPE_CHECKING:
     from .voice_client import VoiceProtocol
     from .command_client import ApplicationCommand
 
-__all__ = (
-    'Client',
-)
+__all__ = ("Client",)
 
-Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
+Coro = TypeVar("Coro", bound=Callable[..., Coroutine[Any, Any, Any]])
 
 
 _log = logging.getLogger(__name__)
+
 
 def _cancel_tasks(loop: asyncio.AbstractEventLoop) -> None:
     tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
@@ -88,30 +102,34 @@ def _cancel_tasks(loop: asyncio.AbstractEventLoop) -> None:
     if not tasks:
         return
 
-    _log.info('Cleaning up after %d tasks.', len(tasks))
+    _log.info("Cleaning up after %d tasks.", len(tasks))
     for task in tasks:
         task.cancel()
 
     loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-    _log.info('All tasks finished cancelling.')
+    _log.info("All tasks finished cancelling.")
 
     for task in tasks:
         if task.cancelled():
             continue
         if task.exception() is not None:
-            loop.call_exception_handler({
-                'message': 'Unhandled exception during Client.run shutdown.',
-                'exception': task.exception(),
-                'task': task
-            })
+            loop.call_exception_handler(
+                {
+                    "message": "Unhandled exception during Client.run shutdown.",
+                    "exception": task.exception(),
+                    "task": task,
+                }
+            )
+
 
 def _cleanup_loop(loop: asyncio.AbstractEventLoop) -> None:
     try:
         _cancel_tasks(loop)
         loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
-        _log.info('Closing the event loop.')
+        _log.info("Closing the event loop.")
         loop.close()
+
 
 class Client:
     r"""Represents a client connection that connects to Discord.
@@ -212,6 +230,7 @@ class Client:
     loop: :class:`asyncio.AbstractEventLoop`
         The event loop that the client uses for asynchronous operations.
     """
+
     def __init__(
         self,
         *,
@@ -220,26 +239,34 @@ class Client:
     ):
         # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
-        self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
-        self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
-        self.shard_id: Optional[int] = options.get('shard_id')
-        self.shard_count: Optional[int] = options.get('shard_count')
+        self.loop: asyncio.AbstractEventLoop = (
+            asyncio.get_event_loop() if loop is None else loop
+        )
+        self._listeners: Dict[
+            str, List[Tuple[asyncio.Future, Callable[..., bool]]]
+        ] = {}
+        self.shard_id: Optional[int] = options.get("shard_id")
+        self.shard_count: Optional[int] = options.get("shard_count")
 
-        connector: Optional[aiohttp.BaseConnector] = options.pop('connector', None)
-        proxy: Optional[str] = options.pop('proxy', None)
-        proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
-        unsync_clock: bool = options.pop('assume_unsync_clock', True)
-        self.http: HTTPClient = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop)
+        connector: Optional[aiohttp.BaseConnector] = options.pop("connector", None)
+        proxy: Optional[str] = options.pop("proxy", None)
+        proxy_auth: Optional[aiohttp.BasicAuth] = options.pop("proxy_auth", None)
+        unsync_clock: bool = options.pop("assume_unsync_clock", True)
+        self.http: HTTPClient = HTTPClient(
+            connector,
+            proxy=proxy,
+            proxy_auth=proxy_auth,
+            unsync_clock=unsync_clock,
+            loop=self.loop,
+        )
 
-        self._handlers: Dict[str, Callable] = {
-            'ready': self._handle_ready
-        }
+        self._handlers: Dict[str, Callable] = {"ready": self._handle_ready}
 
         self._hooks: Dict[str, Callable] = {
-            'before_identify': self._call_before_identify_hook
+            "before_identify": self._call_before_identify_hook
         }
 
-        self._enable_debug_events: bool = options.pop('enable_debug_events', False)
+        self._enable_debug_events: bool = options.pop("enable_debug_events", False)
         self._connection: ConnectionState = self._get_state(**options)
         self._connection.shard_count = self.shard_count
         self._closed: bool = False
@@ -255,15 +282,15 @@ class Client:
         # self._registered_application_commands: Dict[int, ApplicationCommand] = {}
         # self._application_commands_to_bulk_add: Dict[Tuple[ApplicationCommandType, str, Optional[int]], Tuple[dict, ApplicationCommand]] = {}
         # self._register_commands_on_startup: bool = options.pop('register_commands_on_startup', True)
-        self._lazy_load_commands: bool = options.pop('lazy_load_commands', True)
+        self._lazy_load_commands: bool = options.pop("lazy_load_commands", True)
         self._application_commands: Set[ApplicationCommand] = set()
-        self._application_command_signatures: Dict[Tuple[str, int, Optional[int]],
-                                                   ApplicationCommand] = {}
+        self._application_command_signatures: Dict[
+            Tuple[str, int, Optional[int]], ApplicationCommand
+        ] = {}
         self._registered_application_commands: Dict[int, ApplicationCommand] = {}
         # TODO: Work on rollout feature.
         self._application_commands_to_rollout: Set[ApplicationCommand] = set()
         self._performing_application_command_rollout: bool = False
-
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -271,12 +298,20 @@ class Client:
 
     # internals
 
-    def _get_websocket(self, guild_id: Optional[int] = None, *, shard_id: Optional[int] = None) -> DiscordWebSocket:
+    def _get_websocket(
+        self, guild_id: Optional[int] = None, *, shard_id: Optional[int] = None
+    ) -> DiscordWebSocket:
         return self.ws
 
     def _get_state(self, **options: Any) -> ConnectionState:
-        return ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
-                               hooks=self._hooks, http=self.http, loop=self.loop, **options)
+        return ConnectionState(
+            dispatch=self.dispatch,
+            handlers=self._handlers,
+            hooks=self._hooks,
+            http=self.http,
+            loop=self.loop,
+            **options,
+        )
 
     def _handle_ready(self) -> None:
         self._ready.set()
@@ -288,7 +323,7 @@ class Client:
         This could be referred to as the Discord WebSocket protocol latency.
         """
         ws = self.ws
-        return float('nan') if not ws else ws.latency
+        return float("nan") if not ws else ws.latency
 
     def is_ws_ratelimited(self) -> bool:
         """:class:`bool`: Whether the websocket is currently rate limited.
@@ -359,7 +394,7 @@ class Client:
         If this is not passed via ``__init__`` then this is retrieved
         through the gateway when an event contains the data. Usually
         after :func:`~nextcord.on_connect` is called.
-        
+
         .. versionadded:: 2.0
         """
         return self._connection.application_id
@@ -376,7 +411,13 @@ class Client:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready.is_set()
 
-    async def _run_event(self, coro: Callable[..., Coroutine[Any, Any, Any]], event_name: str, *args: Any, **kwargs: Any) -> None:
+    async def _run_event(
+        self,
+        coro: Callable[..., Coroutine[Any, Any, Any]],
+        event_name: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         try:
             await coro(*args, **kwargs)
         except asyncio.CancelledError:
@@ -387,14 +428,20 @@ class Client:
             except asyncio.CancelledError:
                 pass
 
-    def _schedule_event(self, coro: Callable[..., Coroutine[Any, Any, Any]], event_name: str, *args: Any, **kwargs: Any) -> asyncio.Task:
+    def _schedule_event(
+        self,
+        coro: Callable[..., Coroutine[Any, Any, Any]],
+        event_name: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> asyncio.Task:
         wrapped = self._run_event(coro, event_name, *args, **kwargs)
         # Schedules the task
-        return asyncio.create_task(wrapped, name=f'nextcord: {event_name}')
+        return asyncio.create_task(wrapped, name=f"nextcord: {event_name}")
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
-        _log.debug('Dispatching event %s', event)
-        method = 'on_' + event
+        _log.debug("Dispatching event %s", event)
+        method = "on_" + event
 
         listeners = self._listeners.get(event)
         if listeners:
@@ -441,18 +488,22 @@ class Client:
         overridden to have a different implementation.
         Check :func:`~nextcord.on_error` for more details.
         """
-        print(f'Ignoring exception in {event_method}', file=sys.stderr)
+        print(f"Ignoring exception in {event_method}", file=sys.stderr)
         traceback.print_exc()
 
     # hooks
 
-    async def _call_before_identify_hook(self, shard_id: Optional[int], *, initial: bool = False) -> None:
+    async def _call_before_identify_hook(
+        self, shard_id: Optional[int], *, initial: bool = False
+    ) -> None:
         # This hook is an internal hook that actually calls the public one.
         # It allows the library to have its own hook without stepping on the
         # toes of those who need to override their own hook.
         await self.before_identify_hook(shard_id, initial=initial)
 
-    async def before_identify_hook(self, shard_id: Optional[int], *, initial: bool = False) -> None:
+    async def before_identify_hook(
+        self, shard_id: Optional[int], *, initial: bool = False
+    ) -> None:
         """|coro|
 
         A hook that is called before IDENTIFYing a session. This is useful
@@ -498,10 +549,12 @@ class Client:
             passing status code.
         """
 
-        _log.info('logging in using static token')
-        
+        _log.info("logging in using static token")
+
         if not isinstance(token, str):
-            raise TypeError(f"The token provided was of type {type(token)} but was expected to be str")
+            raise TypeError(
+                f"The token provided was of type {type(token)} but was expected to be str"
+            )
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
@@ -533,29 +586,35 @@ class Client:
 
         backoff = ExponentialBackoff()
         ws_params = {
-            'initial': True,
-            'shard_id': self.shard_id,
+            "initial": True,
+            "shard_id": self.shard_id,
         }
         while not self.is_closed():
             try:
                 coro = DiscordWebSocket.from_client(self, **ws_params)
                 self.ws = await asyncio.wait_for(coro, timeout=60.0)
-                ws_params['initial'] = False
+                ws_params["initial"] = False
                 while True:
                     await self.ws.poll_event()
             except ReconnectWebSocket as e:
-                _log.info('Got a request to %s the websocket.', e.op)
-                self.dispatch('disconnect')
-                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)
+                _log.info("Got a request to %s the websocket.", e.op)
+                self.dispatch("disconnect")
+                ws_params.update(
+                    sequence=self.ws.sequence,
+                    resume=e.resume,
+                    session=self.ws.session_id,
+                )
                 continue
-            except (OSError,
-                    HTTPException,
-                    GatewayNotFound,
-                    ConnectionClosed,
-                    aiohttp.ClientError,
-                    asyncio.TimeoutError) as exc:
+            except (
+                OSError,
+                HTTPException,
+                GatewayNotFound,
+                ConnectionClosed,
+                aiohttp.ClientError,
+                asyncio.TimeoutError,
+            ) as exc:
 
-                self.dispatch('disconnect')
+                self.dispatch("disconnect")
                 if not reconnect:
                     await self.close()
                     if isinstance(exc, ConnectionClosed) and exc.code == 1000:
@@ -568,7 +627,12 @@ class Client:
 
                 # If we get connection reset by peer then try to RESUME
                 if isinstance(exc, OSError) and exc.errno in (54, 10054):
-                    ws_params.update(sequence=self.ws.sequence, initial=False, resume=True, session=self.ws.session_id)
+                    ws_params.update(
+                        sequence=self.ws.sequence,
+                        initial=False,
+                        resume=True,
+                        session=self.ws.session_id,
+                    )
                     continue
 
                 # We should only get this when an unhandled close code happens,
@@ -588,7 +652,9 @@ class Client:
                 # Always try to RESUME the connection
                 # If the connection is not RESUME-able then the gateway will invalidate the session.
                 # This is apparently what the official Discord client does.
-                ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)
+                ws_params.update(
+                    sequence=self.ws.sequence, resume=True, session=self.ws.session_id
+                )
 
     async def close(self) -> None:
         """|coro|
@@ -686,10 +752,10 @@ class Client:
         try:
             loop.run_forever()
         except KeyboardInterrupt:
-            _log.info('Received signal to terminate bot and event loop.')
+            _log.info("Received signal to terminate bot and event loop.")
         finally:
             future.remove_done_callback(stop_loop_on_completion)
-            _log.info('Cleaning up tasks.')
+            _log.info("Cleaning up tasks.")
             _cleanup_loop(loop)
 
         if not future.cancelled():
@@ -718,10 +784,10 @@ class Client:
             self._connection._activity = None
         elif isinstance(value, BaseActivity):
             # ConnectionState._activity is typehinted as ActivityPayload, we're passing Dict[str, Any]
-            self._connection._activity = value.to_dict() # type: ignore
+            self._connection._activity = value.to_dict()  # type: ignore
         else:
-            raise TypeError('activity must derive from BaseActivity.')
-    
+            raise TypeError("activity must derive from BaseActivity.")
+
     @property
     def status(self):
         """:class:`.Status`:
@@ -736,11 +802,11 @@ class Client:
     @status.setter
     def status(self, value):
         if value is Status.offline:
-            self._connection._status = 'invisible'
+            self._connection._status = "invisible"
         elif isinstance(value, Status):
             self._connection._status = str(value)
         else:
-            raise TypeError('status must derive from Status.')
+            raise TypeError("status must derive from Status.")
 
     @property
     def allowed_mentions(self) -> Optional[AllowedMentions]:
@@ -755,7 +821,9 @@ class Client:
         if value is None or isinstance(value, AllowedMentions):
             self._connection.allowed_mentions = value
         else:
-            raise TypeError(f'allowed_mentions must be AllowedMentions not {value.__class__!r}')
+            raise TypeError(
+                f"allowed_mentions must be AllowedMentions not {value.__class__!r}"
+            )
 
     @property
     def intents(self) -> Intents:
@@ -772,7 +840,9 @@ class Client:
         """List[:class:`~nextcord.User`]: Returns a list of all the users the bot can see."""
         return list(self._connection._users.values())
 
-    def get_channel(self, id: int, /) -> Optional[Union[GuildChannel, Thread, PrivateChannel]]:
+    def get_channel(
+        self, id: int, /
+    ) -> Optional[Union[GuildChannel, Thread, PrivateChannel]]:
         """Returns a channel or thread with the given ID.
 
         Parameters
@@ -787,12 +857,14 @@ class Client:
         """
         return self._connection.get_channel(id)
 
-    def get_partial_messageable(self, id: int, *, type: Optional[ChannelType] = None) -> PartialMessageable:
+    def get_partial_messageable(
+        self, id: int, *, type: Optional[ChannelType] = None
+    ) -> PartialMessageable:
         """Returns a partial messageable with the given channel ID.
 
         This is useful if you have a channel_id but don't want to do an API call
         to send messages to it.
-        
+
         .. versionadded:: 2.0
 
         Parameters
@@ -1033,8 +1105,10 @@ class Client:
 
         future = self.loop.create_future()
         if check is None:
+
             def _check(*args):
                 return True
+
             check = _check
 
         ev = event.lower()
@@ -1072,10 +1146,10 @@ class Client:
         """
 
         if not asyncio.iscoroutinefunction(coro):
-            raise TypeError('event registered must be a coroutine function')
+            raise TypeError("event registered must be a coroutine function")
 
         setattr(self, coro.__name__, coro)
-        _log.debug('%s has successfully been registered as an event', coro.__name__)
+        _log.debug("%s has successfully been registered as an event", coro.__name__)
         return coro
 
     async def change_presence(
@@ -1114,10 +1188,10 @@ class Client:
         """
 
         if status is None:
-            status_str = 'online'
+            status_str = "online"
             status = Status.online
         elif status is Status.offline:
-            status_str = 'invisible'
+            status_str = "invisible"
             status = Status.offline
         else:
             status_str = str(status)
@@ -1143,7 +1217,7 @@ class Client:
         *,
         limit: Optional[int] = 100,
         before: SnowflakeTime = None,
-        after: SnowflakeTime = None
+        after: SnowflakeTime = None,
     ) -> GuildIterator:
         """Retrieves an :class:`.AsyncIterator` that enables receiving your guilds.
 
@@ -1223,7 +1297,7 @@ class Client:
         """
         code = utils.resolve_template(code)
         data = await self.http.get_template(code)
-        return Template(data=data, state=self._connection) # type: ignore
+        return Template(data=data, state=self._connection)  # type: ignore
 
     async def fetch_guild(self, guild_id: int, /) -> Guild:
         """|coro|
@@ -1309,7 +1383,9 @@ class Client:
         region_value = str(region)
 
         if code:
-            data = await self.http.create_from_template(code, name, region_value, icon_base64)
+            data = await self.http.create_from_template(
+                code, name, region_value, icon_base64
+            )
         else:
             data = await self.http.create_guild(name, region_value, icon_base64)
         return Guild(data=data, state=self._connection)
@@ -1339,12 +1415,18 @@ class Client:
             The stage instance from the stage channel ID.
         """
         data = await self.http.get_stage_instance(channel_id)
-        guild = self.get_guild(int(data['guild_id']))
+        guild = self.get_guild(int(data["guild_id"]))
         return StageInstance(guild=guild, state=self._connection, data=data)  # type: ignore
 
     # Invite management
 
-    async def fetch_invite(self, url: Union[Invite, str], *, with_counts: bool = True, with_expiration: bool = True) -> Invite:
+    async def fetch_invite(
+        self,
+        url: Union[Invite, str],
+        *,
+        with_counts: bool = True,
+        with_expiration: bool = True,
+    ) -> Invite:
         """|coro|
 
         Gets an :class:`.Invite` from a discord.gg URL or ID.
@@ -1383,7 +1465,9 @@ class Client:
         """
 
         invite_id = utils.resolve_invite(url)
-        data = await self.http.get_invite(invite_id, with_counts=with_counts, with_expiration=with_expiration)
+        data = await self.http.get_invite(
+            invite_id, with_counts=with_counts, with_expiration=with_expiration
+        )
         return Invite.from_incomplete(state=self._connection, data=data)
 
     async def delete_invite(self, invite: Union[Invite, str]) -> None:
@@ -1460,8 +1544,8 @@ class Client:
             The bot's application information.
         """
         data = await self.http.application_info()
-        if 'rpc_origins' not in data:
-            data['rpc_origins'] = None
+        if "rpc_origins" not in data:
+            data["rpc_origins"] = None
         return AppInfo(self._connection, data)
 
     async def fetch_user(self, user_id: int, /) -> User:
@@ -1495,7 +1579,9 @@ class Client:
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
 
-    async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, PrivateChannel, Thread]:
+    async def fetch_channel(
+        self, channel_id: int, /
+    ) -> Union[GuildChannel, PrivateChannel, Thread]:
         """|coro|
 
         Retrieves a :class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, or :class:`.Thread` with the specified ID.
@@ -1524,19 +1610,21 @@ class Client:
         """
         data = await self.http.get_channel(channel_id)
 
-        factory, ch_type = _threaded_channel_factory(data['type'])
+        factory, ch_type = _threaded_channel_factory(data["type"])
         if factory is None:
-            raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
+            raise InvalidData(
+                "Unknown channel type {type} for channel ID {id}.".format_map(data)
+            )
 
         if ch_type in (ChannelType.group, ChannelType.private):
             # the factory will be a DMChannel or GroupChannel here
-            channel = factory(me=self.user, data=data, state=self._connection) # type: ignore
+            channel = factory(me=self.user, data=data, state=self._connection)  # type: ignore
         else:
             # the factory can't be a DMChannel or GroupChannel here
-            guild_id = int(data['guild_id']) # type: ignore
+            guild_id = int(data["guild_id"])  # type: ignore
             guild = self.get_guild(guild_id) or Object(id=guild_id)
             # GuildChannels expect a Guild, we may be passing an Object
-            channel = factory(guild=guild, state=self._connection, data=data) # type: ignore
+            channel = factory(guild=guild, state=self._connection, data=data)  # type: ignore
 
         return channel
 
@@ -1562,7 +1650,9 @@ class Client:
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
 
-    async def fetch_sticker(self, sticker_id: int, /) -> Union[StandardSticker, GuildSticker]:
+    async def fetch_sticker(
+        self, sticker_id: int, /
+    ) -> Union[StandardSticker, GuildSticker]:
         """|coro|
 
         Retrieves a :class:`.Sticker` with the specified ID.
@@ -1582,8 +1672,8 @@ class Client:
             The sticker you requested.
         """
         data = await self.http.get_sticker(sticker_id)
-        cls, _ = _sticker_factory(data['type'])  # type: ignore
-        return cls(state=self._connection, data=data) # type: ignore
+        cls, _ = _sticker_factory(data["type"])  # type: ignore
+        return cls(state=self._connection, data=data)  # type: ignore
 
     async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
         """|coro|
@@ -1603,7 +1693,10 @@ class Client:
             All available premium sticker packs.
         """
         data = await self.http.list_premium_sticker_packs()
-        return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
+        return [
+            StickerPack(state=self._connection, data=pack)
+            for pack in data["sticker_packs"]
+        ]
 
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|
@@ -1638,7 +1731,7 @@ class Client:
 
         This method should be used for when a view is comprised of components
         that last longer than the lifecycle of the program.
-        
+
         .. versionadded:: 2.0
 
         Parameters
@@ -1660,17 +1753,19 @@ class Client:
         """
 
         if not isinstance(view, View):
-            raise TypeError(f'expected an instance of View not {view.__class__!r}')
+            raise TypeError(f"expected an instance of View not {view.__class__!r}")
 
         if not view.is_persistent():
-            raise ValueError('View is not persistent. Items need to have a custom_id set and View must have no timeout')
+            raise ValueError(
+                "View is not persistent. Items need to have a custom_id set and View must have no timeout"
+            )
 
         self._connection.store_view(view, message_id)
 
     @property
     def persistent_views(self) -> Sequence[View]:
         """Sequence[:class:`.View`]: A sequence of persistent views added to the client.
-        
+
         .. versionadded:: 2.0
         """
         return self._connection.persistent_views
@@ -1700,33 +1795,61 @@ class Client:
         if interaction.type is InteractionType.application_command:
             print("nextcord.Client: Found an interaction command")
             print(f"nextcord.Client: {self._registered_application_commands}")
-            if app_cmd := self._registered_application_commands.get(int(interaction.data["id"])):
-                print(f"nextcord.Client: Calling your application command now {app_cmd.name}")
+            if app_cmd := self._registered_application_commands.get(
+                int(interaction.data["id"])
+            ):
+                print(
+                    f"nextcord.Client: Calling your application command now {app_cmd.name}"
+                )
                 await app_cmd.call_from_interaction(interaction)
             elif self._lazy_load_commands:
                 print(f"nextcord.Client: Your interaction command failed to register")
                 print(f"nextcord.Client: {interaction.data}")
-                response_signature = (interaction.data["name"], int(interaction.data['type']), interaction.guild_id)
+                response_signature = (
+                    interaction.data["name"],
+                    int(interaction.data["type"]),
+                    interaction.guild_id,
+                )
                 print(f"nextcord.Client: {response_signature}")
-                if app_cmd := self._application_command_signatures.get(response_signature):
+                if app_cmd := self._application_command_signatures.get(
+                    response_signature
+                ):
                     # TODO: Make sure arguments match command. AKA ADD SAFEGUARDS FOR DEVS CHANGING COMMANDS.
-                    print("nextcord.Client: Basic signature matches, checking against raw payload.")
-                    if app_cmd.reverse_check_against_raw_payload(interaction.data, interaction.guild_id):
-                        print("nextcord.Client: New interaction command found, Assigning id now")
-                        self._registered_application_commands[int(interaction.data["id"])] = app_cmd
-                        app_cmd.raw_parse_result(self._connection, interaction.guild_id, int(interaction.data["id"]))
+                    print(
+                        "nextcord.Client: Basic signature matches, checking against raw payload."
+                    )
+                    if app_cmd.reverse_check_against_raw_payload(
+                        interaction.data, interaction.guild_id
+                    ):
+                        print(
+                            "nextcord.Client: New interaction command found, Assigning id now"
+                        )
+                        self._registered_application_commands[
+                            int(interaction.data["id"])
+                        ] = app_cmd
+                        app_cmd.raw_parse_result(
+                            self._connection,
+                            interaction.guild_id,
+                            int(interaction.data["id"]),
+                        )
                         await app_cmd.call_from_interaction(interaction)
 
-    async def add_application_command(self, app_cmd: ApplicationCommand, register=False):
+    async def add_application_command(
+        self, app_cmd: ApplicationCommand, register=False
+    ):
         self._internal_add_application_command(app_cmd, add_to_bulk=True)
         if register:
             raise NotImplementedError  # TODO: Add single-command registration.
 
-    def _internal_add_application_command(self, app_cmd: ApplicationCommand, add_to_bulk: bool = False):
+    def _internal_add_application_command(
+        self, app_cmd: ApplicationCommand, add_to_bulk: bool = False
+    ):
         self._application_commands.add(app_cmd)
         for signature in app_cmd.get_signatures():
             if signature in self._application_command_signatures:
-                raise ValueError("You cannot add application commands with duplicate signatures.")
+                raise ValueError(
+                    "You cannot add application commands with duplicate signatures."
+                )
             else:
                 self._application_command_signatures[signature] = app_cmd
         if add_to_bulk:
@@ -1736,7 +1859,9 @@ class Client:
         print(f"nextcord.Client: On Ready.")
         await self.perform_application_command_rollout()
 
-    async def perform_application_command_rollout(self, delete_unknown: bool = True, register_new: bool = True):
+    async def perform_application_command_rollout(
+        self, delete_unknown: bool = True, register_new: bool = True
+    ):
         # Note: Overwrite will delete un-added commands to guilds.
         if self._performing_application_command_rollout:
             raise NotImplementedError
@@ -1744,28 +1869,52 @@ class Client:
             self._performing_application_command_rollout = True
             # global_commands, guild_commands = self._get_application_command_rollout_payload_lists()
             # print(f"nextcord.Client: {self._application_command_signatures}")
-            raw_get_global_response = await self.http.get_global_commands(self.application_id)
+            raw_get_global_response = await self.http.get_global_commands(
+                self.application_id
+            )
             unregistered_global_commands = self._get_global_commands()
             print(f"nextcord.Client: {raw_get_global_response}")
             for raw_response in raw_get_global_response:
-                response_signature = (raw_response["name"], int(raw_response['type']), None)
-                if app_cmd := self._application_command_signatures.get(response_signature):
-                    print(f"nextcord.Client: Found global command during rollout, {raw_response}")
+                response_signature = (
+                    raw_response["name"],
+                    int(raw_response["type"]),
+                    None,
+                )
+                if app_cmd := self._application_command_signatures.get(
+                    response_signature
+                ):
+                    print(
+                        f"nextcord.Client: Found global command during rollout, {raw_response}"
+                    )
                     unregistered_global_commands.remove(app_cmd)
-                    self._registered_application_commands[int(raw_response["id"])] = app_cmd
-                    app_cmd.raw_parse_result(self._connection, None, int(raw_response["id"]))
+                    self._registered_application_commands[
+                        int(raw_response["id"])
+                    ] = app_cmd
+                    app_cmd.raw_parse_result(
+                        self._connection, None, int(raw_response["id"])
+                    )
                     # self._registered_application_commands[int(raw_response["id"])] = global_cmd
                 elif delete_unknown:
-                    print(f"nextcord.Client: Found unknown global command with ID of {raw_response['id']}, removing.")
-                    await self.http.delete_global_command(self.application_id, raw_response["id"])
+                    print(
+                        f"nextcord.Client: Found unknown global command with ID of {raw_response['id']}, removing."
+                    )
+                    await self.http.delete_global_command(
+                        self.application_id, raw_response["id"]
+                    )
             if register_new:
                 for global_cmd in unregistered_global_commands:
 
-                    raw_response = await self.http.upsert_global_command(self.application_id, global_cmd.global_payload)
-                    response = ApplicationCommandResponse(self._connection, raw_response)
+                    raw_response = await self.http.upsert_global_command(
+                        self.application_id, global_cmd.global_payload
+                    )
+                    response = ApplicationCommandResponse(
+                        self._connection, raw_response
+                    )
                     global_cmd.parse_response(response)
-                    print(f"nextcord.Client: Registering new global command {global_cmd.name}|{global_cmd.type} with"
-                          f"ID {response.id}")
+                    print(
+                        f"nextcord.Client: Registering new global command {global_cmd.name}|{global_cmd.type} with"
+                        f"ID {response.id}"
+                    )
                     self._registered_application_commands[response.id] = global_cmd
 
             # print(f"nextcord.Client: {global_commands}    {guild_commands}")
@@ -1789,7 +1938,9 @@ class Client:
 
             self._performing_application_command_rollout = False
 
-    def _get_application_command_rollout_payload_lists(self) -> Tuple[List[dict], Dict[int, List[dict]]]:
+    def _get_application_command_rollout_payload_lists(
+        self,
+    ) -> Tuple[List[dict], Dict[int, List[dict]]]:
         global_commands: List[dict] = []
         guild_commands: Dict[int, List[dict]] = {}
 
@@ -1855,8 +2006,10 @@ class Client:
             payload_unique_id = response.signature
             if command := self._application_command_signatures.get(payload_unique_id):
                 # command = payload_app_cmd[1]
-                print(f"    nextcord.Client: Parsing response of command {command.name} for guild {response.guild_id}."
-                      f"ID: {response.id}")
+                print(
+                    f"    nextcord.Client: Parsing response of command {command.name} for guild {response.guild_id}."
+                    f"ID: {response.id}"
+                )
                 command.parse_response(response)
                 # TODO: Move this to own function probably.
                 if command not in self._application_commands:
@@ -1866,8 +2019,11 @@ class Client:
             else:
                 # raise ValueError(f"Your bots Payload ID {payload_app_cmd} doesn't correspond to "
                 #                  f"anything in the dict of commands to bulk add")
-                raise ValueError(f"Payload with signature of {payload_unique_id} doesn't correspond to any command"
-                                 f"currently stored.")
+                raise ValueError(
+                    f"Payload with signature of {payload_unique_id} doesn't correspond to any command"
+                    f"currently stored."
+                )
+
     #
     # def add_application_command_to_bulk(self, command: ApplicationCommand):
     #     payload_list = command.payload
@@ -1910,4 +2066,3 @@ class Client:
     #                 to_remove.append(response.id)
     #     except Forbidden:
     #         print(f"CLIENT.PY:we don't have command permission for guild {guild_id}")
-

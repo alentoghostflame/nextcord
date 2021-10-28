@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union, Optional, List, Tuple
 from dataclasses import dataclass
+
 # from enum import IntEnum
 from .enums import ApplicationCommandType, ApplicationCommandOptionType
 from .mixins import Hashable
@@ -32,9 +33,9 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    'ApplicationCommandOptionChoice',
-    'ApplicationCommandOption',
-    'ApplicationCommandResponse'
+    "ApplicationCommandOptionChoice",
+    "ApplicationCommandOption",
+    "ApplicationCommandResponse",
 )
 
 
@@ -42,8 +43,8 @@ class ApplicationCommandOptionChoice:
     def __init__(self, payload: Optional[dict] = None):
         if not payload:
             payload = {}
-        self.name: str = payload.get('name')
-        self.value: Union[str, int, float] = payload.get('value')
+        self.name: str = payload.get("name")
+        self.value: Union[str, int, float] = payload.get("value")
 
     def from_data(self, data: dict):
         self.__init__(data)
@@ -56,11 +57,15 @@ class ApplicationCommandOption:
 
     def _from_data(self, data: dict):
         self.type = ApplicationCommandOptionType(int(data["type"]))
-        self.name: str = data['name']
-        self.description: str = data['description']
-        self.required: Optional[bool] = data.get('required')
-        self.choices: List[ApplicationCommandOptionChoice] = self.create_all_choices(data.get('choices', []))
-        self.options: List[ApplicationCommandOption] = self.create_all_options(data.get('options', []))
+        self.name: str = data["name"]
+        self.description: str = data["description"]
+        self.required: Optional[bool] = data.get("required")
+        self.choices: List[ApplicationCommandOptionChoice] = self.create_all_choices(
+            data.get("choices", [])
+        )
+        self.options: List[ApplicationCommandOption] = self.create_all_options(
+            data.get("options", [])
+        )
 
     @staticmethod
     def create_all_choices(data: List[dict]) -> List[ApplicationCommandOptionChoice]:
@@ -72,20 +77,21 @@ class ApplicationCommandOption:
 
 
 class ApplicationCommandResponse(Hashable):
-
     def __init__(self, state: ConnectionState, payload: dict):
         self._state: ConnectionState = state
         self._from_data(payload)
 
     def _from_data(self, data: dict):
-        self.id: int = int(data['id'])
-        self.type: ApplicationCommandType = ApplicationCommandType(int(data['type']))
-        self.application_id: int = int(data['application_id'])
-        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
-        self.name: str = data['name']
-        self.description: str = data['description']
-        self.options = ApplicationCommandOption.create_all_options(data.get('options', []))
-        self.default_permission: Optional[bool] = data.get('default_permission', True)
+        self.id: int = int(data["id"])
+        self.type: ApplicationCommandType = ApplicationCommandType(int(data["type"]))
+        self.application_id: int = int(data["application_id"])
+        self.guild_id: Optional[int] = utils._get_as_snowflake(data, "guild_id")
+        self.name: str = data["name"]
+        self.description: str = data["description"]
+        self.options = ApplicationCommandOption.create_all_options(
+            data.get("options", [])
+        )
+        self.default_permission: Optional[bool] = data.get("default_permission", True)
 
     @property
     def guild(self) -> Optional[Guild]:
@@ -96,7 +102,9 @@ class ApplicationCommandResponse(Hashable):
 
     async def delete(self):
         if self.guild_id:
-            await self._state.http.delete_guild_command(self.application_id, self.guild_id, self.id)
+            await self._state.http.delete_guild_command(
+                self.application_id, self.guild_id, self.id
+            )
         else:
             await self._state.http.delete_global_command(self.application_id, self.id)
 
@@ -183,4 +191,3 @@ class ApplicationCommandResponse(Hashable):
 # # def _get_option_signature(option_dict: dict):
 # #
 # #     return int(option_dict["type"]), option_dict["name"], option_dict["description"], option_dict.get("required", None)
-

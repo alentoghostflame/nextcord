@@ -22,15 +22,15 @@ _log = logging.getLogger(__name__)
 
 
 __all__ = (
-    'SlashOption',
-    'ApplicationCommand',
-    'ApplicationSubcommand',
-    'CommandArgument',
-    'CommandClient',
-    'CommandCog',
-    'slash_command',
-    'user_command',
-    'message_command'
+    "SlashOption",
+    "ApplicationCommand",
+    "ApplicationSubcommand",
+    "CommandArgument",
+    "CommandClient",
+    "CommandCog",
+    "slash_command",
+    "user_command",
+    "message_command",
 )
 
 
@@ -39,12 +39,12 @@ class InvalidCommandType(Exception):
 
 
 class SlashOption:
-    """ Slash Command Fields For nextcord
-    
+    """Slash Command Fields For nextcord
+
     example:
-    
+
     .. code-block:: python3
-        
+
         @bot.slash_command(name="help")
         async def help(interaction: Interaction,
                 setting: str = SlashOption(name=settings, description="Configure Your Settings")):
@@ -52,10 +52,18 @@ class SlashOption:
             await interaction.response.send_message(f"MOOSIC")
         if setting == "moderation"
             await interaction.response.send_message(f"Mods party? POOG")
-    
+
     """
-    def __init__(self, name: str = None, description: str = None, required: bool = None, choices: dict = None,
-                 default: Any = None, channel_types: List[ChannelType, ...] = None):
+
+    def __init__(
+        self,
+        name: str = None,
+        description: str = None,
+        required: bool = None,
+        choices: dict = None,
+        default: Any = None,
+        channel_types: List[ChannelType, ...] = None,
+    ):
         if not choices:
             choices = []
         self.name: Optional[str] = name
@@ -68,6 +76,7 @@ class SlashOption:
 
 class CommandArgument(SlashOption):
     """This must set all variables from CmdArg, hence the subclass."""
+
     def __init__(self, parameter: Parameter):
         super().__init__()
         self.parameter = parameter
@@ -81,7 +90,9 @@ class CommandArgument(SlashOption):
 
         # TODO: Cleanup logic for this.
         self.name = cmd_arg.name if cmd_arg.name is not None else parameter.name
-        self.description = cmd_arg.description if cmd_arg.description is not None else " "
+        self.description = (
+            cmd_arg.description if cmd_arg.description is not None else " "
+        )
         self.required = cmd_arg.required if cmd_arg.required is not None else None
         self.choices = cmd_arg.choices if cmd_arg.choices is not None else {}
         if not cmd_arg_given and parameter.default is not parameter.empty:
@@ -90,7 +101,9 @@ class CommandArgument(SlashOption):
             self.default = cmd_arg.default
         if self.default is None and cmd_arg.required in (None, True):
             self.required = True
-        self.channel_types = cmd_arg.channel_types if cmd_arg.channel_types is not None else []
+        self.channel_types = (
+            cmd_arg.channel_types if cmd_arg.channel_types is not None else []
+        )
         self.type: CommandOptionType = self.get_type(parameter.annotation)
         self.verify()
 
@@ -116,14 +129,18 @@ class CommandArgument(SlashOption):
         elif typing is Message:  # TODO: Brutally test please.
             return CommandOptionType.integer
         else:
-            raise NotImplementedError(f"Type \"{typing}\" isn't supported.")
+            raise NotImplementedError(f'Type "{typing}" isn\'t supported.')
 
     def verify(self):
         """This should run through CmdArg variables and raise errors when conflicting data is given."""
         if self.channel_types and self.type is not CommandOptionType.channel:
-            raise ValueError("channel_types can only be given when the var is typed as nextcord.abc.GuildChannel")
+            raise ValueError(
+                "channel_types can only be given when the var is typed as nextcord.abc.GuildChannel"
+            )
 
-    def handle_slash_argument(self, state: ConnectionState, argument: Any, interaction: Interaction) -> Any:
+    def handle_slash_argument(
+        self, state: ConnectionState, argument: Any, interaction: Interaction
+    ) -> Any:
         if self.type is CommandOptionType.channel:
             return state.get_channel(int(argument))
         elif self.type is CommandOptionType.user:  # TODO: Brutally test please.
@@ -152,32 +169,50 @@ class CommandArgument(SlashOption):
         # self.verify()
         # TODO: Figure out why pycharm is being a dingus about self.type.value being an unsolved attribute.
         # noinspection PyUnresolvedReferences
-        ret = {"type": self.type.value, "name": self.name, "description": self.description}
+        ret = {
+            "type": self.type.value,
+            "name": self.name,
+            "description": self.description,
+        }
         # ret["type"] = self.type.value
         # ret["name"] = self.name
         # ret["description"] = self.description
         if self.required is not None:
             ret["required"] = self.required
         if self.choices:
-            ret["choices"] = [{"name": key, "value": value} for key, value in self.choices.items()]
+            ret["choices"] = [
+                {"name": key, "value": value} for key, value in self.choices.items()
+            ]
         if self.channel_types:
             # TODO: Figure out why pycharm is being a dingus about channel_type.value being an unsolved attribute.
             # noinspection PyUnresolvedReferences
-            ret["channel_types"] = [channel_type.value for channel_type in self.channel_types]
+            ret["channel_types"] = [
+                channel_type.value for channel_type in self.channel_types
+            ]
         # We don't ask for the payload if we have options, so no point in checking for options.
         return ret
 
 
 class ApplicationSubcommand:
-    def __init__(self, callback: Callable, parent: Optional[Union[ApplicationCommand, ApplicationSubcommand]],
-                 cmd_type: Union[CommandType, CommandOptionType], cog_parent: Optional[CommandCog] = None,
-                 name: str = "", description: str = "", required: Optional[bool] = None, guild_ids: List[int] = None,
-                 choices: Dict[str, Any] = None):
+    def __init__(
+        self,
+        callback: Callable,
+        parent: Optional[Union[ApplicationCommand, ApplicationSubcommand]],
+        cmd_type: Union[CommandType, CommandOptionType],
+        cog_parent: Optional[CommandCog] = None,
+        name: str = "",
+        description: str = "",
+        required: Optional[bool] = None,
+        guild_ids: List[int] = None,
+        choices: Dict[str, Any] = None,
+    ):
         if guild_ids is None:
             guild_ids = []
         else:
             # TODO: Per-guild subcommands.
-            raise NotImplementedError("Per-guild subcommands are not yet handled properly. Ask Alento about them!")
+            raise NotImplementedError(
+                "Per-guild subcommands are not yet handled properly. Ask Alento about them!"
+            )
         if not asyncio.iscoroutinefunction(callback):
             raise TypeError("Callback must be a coroutine.")
 
@@ -199,8 +234,10 @@ class ApplicationSubcommand:
 
     def _analyze_content(self):
         if isinstance(self._parent, ApplicationSubcommand) and self.children:
-            raise NotImplementedError("A subcommand can't have both subcommand parents and children! Discord does not"
-                                      "support this.")
+            raise NotImplementedError(
+                "A subcommand can't have both subcommand parents and children! Discord does not"
+                "support this."
+            )
         if isinstance(self._parent, ApplicationCommand):
             if self.children:
                 self.type = CommandOptionType.sub_command_group
@@ -208,7 +245,7 @@ class ApplicationSubcommand:
                 self.type = CommandOptionType.sub_command
         if self.type is CommandType.user or self.type is CommandType.message:
             self.description = ""
-            print(f"ANALYZE CONTENT: Description: \"{self.description}\"")
+            print(f'ANALYZE CONTENT: Description: "{self.description}"')
         else:
             print(f"ANALYZE CONTENT: {self.type} {type(self.type)} {CommandType.user}")
             if not self.description:
@@ -221,13 +258,20 @@ class ApplicationSubcommand:
 
         # print(f"ANALYZE CALLBACK: Self Skip: {self_skip} {self.callback}")
         for value in signature(self.callback).parameters.values():
-            self_skip = value.name == "self"  # TODO: What kind of hardcoding is this, figure out a better way for self!
+            self_skip = (
+                value.name == "self"
+            )  # TODO: What kind of hardcoding is this, figure out a better way for self!
             if first_arg:
                 # TODO: Is this even worth having?
                 # print(f"ANALYZE CALLBACK: First arg name is {value.name} {value.kind}")
-                if value.annotation is not value.empty and value.annotation is not Interaction:
+                if (
+                    value.annotation is not value.empty
+                    and value.annotation is not Interaction
+                ):
                     # print(f"ANALYZE CALLBACK: {value.name} - {value.annotation}")
-                    raise TypeError("First argument in an Application Command should be an Interaction.")
+                    raise TypeError(
+                        "First argument in an Application Command should be an Interaction."
+                    )
                 if self_skip:
                     self_skip = False
                 else:
@@ -240,7 +284,12 @@ class ApplicationSubcommand:
     def callback(self) -> Callable:
         return self._callback
 
-    async def call(self, state: ConnectionState, interaction: Interaction, option_data: List[Dict[str, Any]]):
+    async def call(
+        self,
+        state: ConnectionState,
+        interaction: Interaction,
+        option_data: List[Dict[str, Any]],
+    ):
         """
         Calls the callback, gathering and inserting kwargs into the callback as needed.
         This must be able to call itself as subcommands may be subcommand groups, and thus have subcommands of their
@@ -263,18 +312,28 @@ class ApplicationSubcommand:
         if self.children:
             # Discord currently does not allow commands that have subcommands to be ran. Therefore, if a command has
             # children, a subcommand must be being called.
-            print(f"Found children, running that in {self.name} with options {option_data[0].get('options', {})}")
-            await self.children[option_data[0]["name"]].call(state, interaction, option_data[0].get("options", {}))
+            print(
+                f"Found children, running that in {self.name} with options {option_data[0].get('options', {})}"
+            )
+            await self.children[option_data[0]["name"]].call(
+                state, interaction, option_data[0].get("options", {})
+            )
         elif self.type in (CommandType.chat_input, CommandOptionType.sub_command):
             # Slash commands are able to have subcommands, therefore that is handled here.
             await self.call_invoke_slash(state, interaction, option_data)
         else:
             # Anything that can't be handled in here should be raised for ApplicationCommand to handle.
             # TODO: Figure out how to hide this in exception trace log.
-            raise InvalidCommandType(f"{self.type} is not a handled Application Command type.")
+            raise InvalidCommandType(
+                f"{self.type} is not a handled Application Command type."
+            )
 
-    async def call_invoke_slash(self, state: ConnectionState, interaction: Interaction,
-                                option_data: List[Dict[str, Any]]):
+    async def call_invoke_slash(
+        self,
+        state: ConnectionState,
+        interaction: Interaction,
+        option_data: List[Dict[str, Any]],
+    ):
         """
         This invokes the slash command implementation with the given raw option data to turn into proper kwargs for the
         callback.
@@ -298,13 +357,18 @@ class ApplicationSubcommand:
         for arg_data in option_data:
             if arg_data["name"] in uncalled_args:
                 uncalled_args.pop(arg_data["name"])
-                kwargs[self.arguments[arg_data["name"]].functional_name] = \
-                    self.arguments[arg_data["name"]].handle_slash_argument(state, arg_data["value"], interaction)
+                kwargs[
+                    self.arguments[arg_data["name"]].functional_name
+                ] = self.arguments[arg_data["name"]].handle_slash_argument(
+                    state, arg_data["value"], interaction
+                )
             else:
                 # TODO: Handle this better.
-                raise NotImplementedError(f"An argument was provided that wasn't already in the function, did you"
-                                          f"recently change it?\nRegistered Args: {self.arguments}, Discord-sent"
-                                          f"args: {interaction.data['options']}, broke on {arg_data}")
+                raise NotImplementedError(
+                    f"An argument was provided that wasn't already in the function, did you"
+                    f"recently change it?\nRegistered Args: {self.arguments}, Discord-sent"
+                    f"args: {interaction.data['options']}, broke on {arg_data}"
+                )
         for uncalled_arg in uncalled_args.values():
             kwargs[uncalled_arg.functional_name] = uncalled_arg.default
         await self.invoke_slash(interaction, **kwargs)
@@ -323,7 +387,11 @@ class ApplicationSubcommand:
     @property
     def payload(self) -> dict:
         # noinspection PyUnresolvedReferences
-        ret = {"type": self.type.value, "name": self.name, "description": self.description}
+        ret = {
+            "type": self.type.value,
+            "name": self.name,
+            "description": self.description,
+        }
         if self.required is not None:
             ret["required"] = self.required
         if self.choices:
@@ -335,14 +403,14 @@ class ApplicationSubcommand:
         return ret
 
     def subcommand(self, **kwargs):
-        """ Nextcord Subcommands
-        
+        """Nextcord Subcommands
+
         A function that allows for nextcord slash commands
-        
+
         example:
-        
+
         .. code-block:: python3
-            
+
             @bot.slash_command()
             async def main(interaction):
                 await interaction.response.send_message("This will never get called if this has subcommands.")
@@ -351,37 +419,58 @@ class ApplicationSubcommand:
             @main.subcommand()
             async def sub1(interaction):
                 await interaction.response.send_message("This is subcommand 1!")
-            
+
             @main.subcommand()
             async def sub2(interaction):
-                await interaction.response.send_message("This is subcommand 2!")   
-        
+                await interaction.response.send_message("This is subcommand 2!")
+
         """
+
         def decorator(func: Callable):
-            result = ApplicationSubcommand(func, self, CommandOptionType.sub_command, **kwargs)
+            result = ApplicationSubcommand(
+                func, self, CommandOptionType.sub_command, **kwargs
+            )
             self.children[result.name] = result
             return result
+
         return decorator
 
 
 class ApplicationCommand(ApplicationSubcommand):
-    def __init__(self, callback: Callable, cmd_type: CommandType,
-                 name: str = "", description: str = "", guild_ids: List[int] = None, force_global: bool = False,
-                 default_permission: Optional[bool] = None):
+    def __init__(
+        self,
+        callback: Callable,
+        cmd_type: CommandType,
+        name: str = "",
+        description: str = "",
+        guild_ids: List[int] = None,
+        force_global: bool = False,
+        default_permission: Optional[bool] = None,
+    ):
         # TODO: Have global and guilds be off. Allow a command to be in the system, but not registered to guilds or
         #  global. Global should be True, False, None where None makes it default to True if no guild_ids and false
         #  if there are guild_ids. For super dynamic guild_id setting, it will be done at runtime. Thus, being able to
         #  have a command not be global and not be a guild command must be possible. Index by type + name.
-        super().__init__(callback=callback, parent=None, cmd_type=cmd_type, name=name, description=description,
-                         guild_ids=None)
+        super().__init__(
+            callback=callback,
+            parent=None,
+            cmd_type=cmd_type,
+            name=name,
+            description=description,
+            guild_ids=None,
+        )
         # Basic input checking.
         if guild_ids is None:
             guild_ids = []
         if not asyncio.iscoroutinefunction(callback):
             raise TypeError("Callback must be a coroutine.")
         # Hidden variable init.
-        self._state: Optional[ConnectionState] = None  # TODO: I thought there was a way around doing this, but *sigh*.
-        self._is_global: Optional[bool] = True if (guild_ids and force_global) or (not guild_ids) else False
+        self._state: Optional[
+            ConnectionState
+        ] = None  # TODO: I thought there was a way around doing this, but *sigh*.
+        self._is_global: Optional[bool] = (
+            True if (guild_ids and force_global) or (not guild_ids) else False
+        )
         self._is_guild: Optional[bool] = True if guild_ids else False
 
         self.default_permission: Optional[bool] = default_permission
@@ -398,21 +487,29 @@ class ApplicationCommand(ApplicationSubcommand):
         #     self._global_id = response.id
         self.raw_parse_result(response._state, response.guild_id, response.id)
 
-    def raw_parse_result(self, state: ConnectionState, guild_id: Optional[int], command_id):
+    def raw_parse_result(
+        self, state: ConnectionState, guild_id: Optional[int], command_id
+    ):
         self._state = state
         if guild_id:
             self._guild_ids[guild_id] = command_id
         else:
             self._global_id = command_id
 
-
     async def call_from_interaction(self, interaction: Interaction):
         """Runs call using the held ConnectionState object and given interaction."""
         if not self._state:
-            raise NotImplementedError("State hasn't been set yet, this isn't handled yet!")
+            raise NotImplementedError(
+                "State hasn't been set yet, this isn't handled yet!"
+            )
         await self.call(self._state, interaction, interaction.data.get("options", {}))
 
-    async def call(self, state: ConnectionState, interaction: Interaction, option_data: List[Dict[str, Any]]):
+    async def call(
+        self,
+        state: ConnectionState,
+        interaction: Interaction,
+        option_data: List[Dict[str, Any]],
+    ):
         """
         Calls the callback, gathering and inserting kwargs into the callback as needed.
         This handles CommandTypes that subcommands cannot handle, such as Message or User commands.
@@ -428,7 +525,9 @@ class ApplicationCommand(ApplicationSubcommand):
             elif self.type is CommandType.user:
                 await self.call_invoke_user(state, interaction)
             else:
-                raise InvalidCommandType(f"{self.type} is not a handled Application Command type.")
+                raise InvalidCommandType(
+                    f"{self.type} is not a handled Application Command type."
+                )
 
     def _handle_resolved_message(self, message_data: dict):
         """
@@ -445,16 +544,23 @@ class ApplicationCommand(ApplicationSubcommand):
         # The interaction gives us message data, might as well use it and add it to the cache?
         channel, guild = self._state._get_guild_channel(message_data)
         message = Message(channel=channel, data=message_data, state=self._state)
-        if not self._state._get_message(message.id) and self._state._messages is not None:
+        if (
+            not self._state._get_message(message.id)
+            and self._state._messages is not None
+        ):
             self._state._messages.append(message)
 
-    async def call_invoke_message(self, state: ConnectionState, interaction: Interaction):
+    async def call_invoke_message(
+        self, state: ConnectionState, interaction: Interaction
+    ):
         # TODO: Look into function arguments being autoconverted and given? Arg typed "Channel" gets filled with the
         #  channel?
         for message_data in interaction.data["resolved"]["messages"].values():
             self._handle_resolved_message(message_data)
         message = state._get_message(int(interaction.data["target_id"]))
-        print(f"COMMAND_CLIENT.PY: Got message of {message} target id {interaction.data['target_id']}")
+        print(
+            f"COMMAND_CLIENT.PY: Got message of {message} target id {interaction.data['target_id']}"
+        )
         await self.invoke_message(interaction, message)
 
     async def call_invoke_user(self, state: ConnectionState, interaction: Interaction):
@@ -467,15 +573,18 @@ class ApplicationCommand(ApplicationSubcommand):
         # member = interaction.guild.get_member(int(interaction.data["target_id"]))
         await self.invoke_user(interaction, member)
 
-    async def invoke_message(self, interaction: Interaction, message: Message, **kwargs):
+    async def invoke_message(
+        self, interaction: Interaction, message: Message, **kwargs
+    ):
         """The parameters of this function should have the bare minimum needed to do a user command."""
         if self.cog_parent:
             await self.callback(self.cog_parent, interaction, message, **kwargs)
         else:
             await self.callback(interaction, message, **kwargs)
 
-
-    async def invoke_user(self, interaction: Interaction, member: Union[Member, User], **kwargs):
+    async def invoke_user(
+        self, interaction: Interaction, member: Union[Member, User], **kwargs
+    ):
 
         """The parameters of this function should have the bare minimum needed to do a user command."""
         if self.cog_parent:
@@ -499,11 +608,13 @@ class ApplicationCommand(ApplicationSubcommand):
         if self.default_permission is not None:
             partial_payload["default_permission"] = self.default_permission
 
-    #     if self.guild_ids:
+        #     if self.guild_ids:
         ret = []
         if self.is_guild:
             for guild_id in self.guild_ids:
-                temp = partial_payload.copy()  # This shouldn't need to be a deep copy, guild_id is on the top layer.
+                temp = (
+                    partial_payload.copy()
+                )  # This shouldn't need to be a deep copy, guild_id is on the top layer.
                 temp["guild_id"] = guild_id
                 ret.append(temp)
         if self.is_global:
@@ -529,8 +640,9 @@ class ApplicationCommand(ApplicationSubcommand):
     def is_global(self) -> bool:
         return self._is_global
 
-
-    def get_signature(self, guild_id: Optional[int]) -> Optional[Tuple[str, int, Optional[int]]]:
+    def get_signature(
+        self, guild_id: Optional[int]
+    ) -> Optional[Tuple[str, int, Optional[int]]]:
         if (guild_id is None and self.is_global) or (guild_id in self.guild_ids):
             return self.name, self.type.value, guild_id
         else:
@@ -545,23 +657,31 @@ class ApplicationCommand(ApplicationSubcommand):
                 ret.add((self.name, self.type.value, guild_id))
         return ret
 
-    def reverse_check_against_raw_payload(self, raw_payload: dict, guild_id: Optional[int]) -> bool:
+    def reverse_check_against_raw_payload(
+        self, raw_payload: dict, guild_id: Optional[int]
+    ) -> bool:
         modded_payload = raw_payload.copy()
         modded_payload.pop("id")
         for our_payload in self.payload:
             # if our_payload.get("guild_id", None) == raw_payload.get("guild_id", None):
             if our_payload.get("guild_id", None) == guild_id:
-                print(f"nextcord.command_client: {our_payload.get('guild_id', None)} == {guild_id}")
+                print(
+                    f"nextcord.command_client: {our_payload.get('guild_id', None)} == {guild_id}"
+                )
                 if self._recursive_item_check(modded_payload, our_payload):
                     return True
         return False
 
-    def check_against_raw_payload(self, raw_payload: dict, guild_id: Optional[int]) -> bool:
+    def check_against_raw_payload(
+        self, raw_payload: dict, guild_id: Optional[int]
+    ) -> bool:
         our_payloads = self.payload
         for our_payload in our_payloads:
             # if our_payload.get("guild_id", None) == (int(guild_id) if (guild_id := raw_payload.get("guild_id", None)) else guild_id):
             if our_payload.get("guild_id", None) == guild_id:
-                print(f"nextcord.command_client: {our_payload.get('guild_id', None)} == {guild_id}")
+                print(
+                    f"nextcord.command_client: {our_payload.get('guild_id', None)} == {guild_id}"
+                )
                 # print(f"nextcord.command_client: {our_payload}")
                 # print(f"nextcord.command_client: {raw_payload}")
                 if self._recursive_item_check(our_payload, raw_payload):
@@ -576,7 +696,9 @@ class ApplicationCommand(ApplicationSubcommand):
                 if key == "value":
                     print(f"nextcord.command_client: Key value found, ignoring.")
                 elif key not in item2:
-                    print(f"nextcord.command_client: Recursive dict check failed: key {key} not in item2.")
+                    print(
+                        f"nextcord.command_client: Recursive dict check failed: key {key} not in item2."
+                    )
                     return False
                 elif not self._recursive_item_check(item, item2[key]):
                     print("nextcord.command_client: Recursive dict check failed.")
@@ -607,7 +729,9 @@ class ApplicationCommand(ApplicationSubcommand):
                 #     raise NotImplementedError
 
         elif item1 != item2:
-            print(f"nextcord.command_client: Recursive item check failed: {item1} != {item2}")
+            print(
+                f"nextcord.command_client: Recursive item check failed: {item1} != {item2}"
+            )
             return False
         return True
 
@@ -626,8 +750,6 @@ class ApplicationCommand(ApplicationSubcommand):
         else:
             raise NotImplementedError
         return False
-
-
 
     # def get_complex_signature(self, guild_id: Optional[int]) -> Optional[Tuple[Tuple[str, int, Optional[int]], ]]:
     #     if (guild_id is None and self.is_global) or (guild_id in self.guild_ids):
@@ -664,7 +786,9 @@ class CommandCog:
                 if isinstance(value, ApplicationCommand):
                     print(f"COG:     ADDING COMMAND {value.name}")
                     if isinstance(value, staticmethod):
-                        raise TypeError(f"Command {self.__name__}.{elem} can not be a staticmethod.")
+                        raise TypeError(
+                            f"Command {self.__name__}.{elem} can not be a staticmethod."
+                        )
                     value.cog_parent = self
                     self.__cog_to_register__.append(value)
                 elif isinstance(value, ApplicationSubcommand):
@@ -687,10 +811,10 @@ class CommandClient(Client):
         self.register_cog_commands()
         # for command in self._commands_to_reg_not_great:
         #     await self.register_command(command)
+
     #
     #     await super().on_connect()
     #     print(f"ON CONNECT: Registered command count: {len(self._application_commands)}")
-
 
     # async def register_application_commands(self):
     #     print(f"TO BE REGISTERED: {self._commands_to_register_bad}")
@@ -720,7 +844,6 @@ class CommandClient(Client):
     #     #     response = await self.register_application_command(command.call_from_interaction, command.payload)
     #     #     command.parse_response(response)
 
-
     # async def delete_unknown_commands(self):
     #     to_remove = []
     #     for app_response in self._connection.application_commands:
@@ -736,29 +859,28 @@ class CommandClient(Client):
     #     for app_id in to_remove:
     #         self._connection._remove_application_command(app_id)
 
-
     # def add_application_command_request(self, application_command: ApplicationCommand):
     #     # self._commands_to_register_bad.append(application_command)
     #     # self.add_application_command_to_bulk(application_command)  # TODO: Unneeded, refactor.
     #     # self._commands_to_reg_not_great.append(application_command)
 
-
     def add_cog(self, cog: CommandCog):
         self._cogs.append(cog)
 
     def user_command(self, *args, **kwargs):
-        """ The Function For Making User Commands In nextcord
-        
+        """The Function For Making User Commands In nextcord
+
         Usable In Both Cogs And Non-Cogs
-    
+
         example:
-    
+
         .. code-block:: python3
-    
+
             @bot.user_command(name="dump")
             async def userdump(self, interaction, member):
                 await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
         """
+
         def decorator(func: Callable):
             result = user_command(*args, **kwargs)(func)
 
@@ -766,51 +888,56 @@ class CommandClient(Client):
             self._internal_add_application_command(result, add_to_bulk=True)
 
             return result
+
         return decorator
 
     def message_command(self, *args, **kwargs):
-        """ The Function For Making Message Commands In nextcord
-        
+        """The Function For Making Message Commands In nextcord
+
         Usable In Both Cogs And Non-Cogs
-    
+
         example:
-    
+
         .. code-block:: python3
-    
+
             @bot.message_command(name="dump")
             async def messagedump(self, interaction, message: Message):
                 await interaction.response.send_message(f"Data Dump: {interaction.data}")
-    
+
         """
+
         def decorator(func: Callable):
             result = message_command(*args, **kwargs)(func)
 
             # self.add_application_command_request(result)
             self._internal_add_application_command(result, add_to_bulk=True)
             return result
+
         return decorator
 
     def slash_command(self, *args, **kwargs):
-        """ The Function For Making Interaction Commands In nextcord
-        
+        """The Function For Making Interaction Commands In nextcord
+
         Usable In Cogs And Non-Cogs
-    
+
         example:
-    
+
         .. code-block:: python3
-    
+
             @bot.slash_command(name="ping")
             async def ping(interaction):
                 await interaction.response.send_message("Pong!")
 
-    
+
         """
+
         def decorator(func: Callable):
             result = slash_command(*args, **kwargs)(func)
 
             # self.add_application_command_request(result)
             self._internal_add_application_command(result, add_to_bulk=True)
             return result
+
         return decorator
 
     # async def on_application_command(self, interaction: Interaction):
@@ -827,7 +954,10 @@ def slash_command(*args, **kwargs):
     def decorator(func: Callable):
         if isinstance(func, ApplicationCommand):
             raise TypeError("Callback is already an ApplicationCommandRequest.")
-        return ApplicationCommand(func, cmd_type=CommandType.chat_input, *args, **kwargs)
+        return ApplicationCommand(
+            func, cmd_type=CommandType.chat_input, *args, **kwargs
+        )
+
     return decorator
 
 
@@ -846,6 +976,7 @@ def message_command(*args, **kwargs):
         if isinstance(func, ApplicationCommand):
             raise TypeError("Callback is already an ApplicationCommandRequest.")
         return ApplicationCommand(func, cmd_type=CommandType.message, *args, **kwargs)
+
     return decorator
 
 
@@ -854,6 +985,7 @@ def user_command(*args, **kwargs):
         if isinstance(func, ApplicationCommand):
             raise TypeError("Callback is already an ApplicationCommandRequest.")
         return ApplicationCommand(func, cmd_type=CommandType.user, *args, **kwargs)
+
     return decorator
 
 
