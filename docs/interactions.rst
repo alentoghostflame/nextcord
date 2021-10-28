@@ -97,7 +97,7 @@ Made by alento it's a user dump command that dumps user data
 
 .. code-block:: python3
 
-    @user_command(name="dump")
+    @bot.user_command(name="dump")
     async def userdump(self, interaction, member):
         await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
 
@@ -108,7 +108,7 @@ Made by alento it's a message dump command that dumps message data
 
 .. code-block:: python3
 
-    @message_command(name="dump")
+    @bot.message_command(name="dump")
     async def messagedump(self, interaction, message: Message):
         await interaction.response.send_message(f"Data Dump: {interaction.data}")
         
