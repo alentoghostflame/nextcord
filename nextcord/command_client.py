@@ -403,7 +403,7 @@ class ApplicationSubcommand:
     def subcommand(self, **kwargs):
         """Nextcord Subcommands
 
-        A function that allows for nextcord slash commands
+        A function that allows for nextcord subcommands
 
         example:
 
