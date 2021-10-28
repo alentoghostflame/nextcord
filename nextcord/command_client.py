@@ -726,6 +726,8 @@ class CommandClient(Client):
 
     def user_command(self, *args, **kwargs):
         """ The Function For Making User Commands In nextcord
+        
+        Usable In Both Cogs And Non-Cogs
     
         example:
     
@@ -746,6 +748,8 @@ class CommandClient(Client):
 
     def message_command(self, *args, **kwargs):
         """ The Function For Making Message Commands In nextcord
+        
+        Usable In Both Cogs And Non-Cogs
     
         example:
     
@@ -766,6 +770,8 @@ class CommandClient(Client):
 
     def slash_command(self, *args, **kwargs):
         """ The Function For Making Interaction Commands In nextcord
+        
+        Usable In Cogs And Non-Cogs
     
         example:
     
