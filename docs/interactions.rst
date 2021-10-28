@@ -24,7 +24,7 @@ This right here is a simple ping pong Command made with Nextcords slash feature.
     async def ping(interaction):
         await interaction.response.send_message("Pong!")
         
-The way it works is that you use the slash_command fuction to interact with the DiscordAPI "name" is the name of your slash command, And guild_ids is used to limit the guilds that the slash command is available also useful for testing as slash commands can take up to an hour to register
+The way it works is that you use the slash_command function to interact with the DiscordAPI "name" is the name of your slash command, And guild_ids is used to limit the guilds that the slash command is available also useful for testing as slash commands can take up to an hour to register
 
 How To Use Sub-Commands
 -------------------------
