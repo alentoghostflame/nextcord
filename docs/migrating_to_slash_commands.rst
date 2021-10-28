@@ -9,7 +9,7 @@ Differences
 -------------
 One of the biggest difference's is the deprevation of CTX(Context) in the use of interaction 
 
-**NOTE:** It may take up to an hour for a slash command to render globally we reccomend you put guild_ids[] to limit the amount of guilds for testing 
+**NOTE:** It may take up to an hour for a slash command to render globally so we recommend you put guild_ids[] to limit the amount of guilds for testing 
 
 Old Commands:
 
