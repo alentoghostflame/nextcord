@@ -710,7 +710,7 @@ class CommandClient(Client):
         self._cogs.append(cog)
 
     def user_command(self, *args, **kwargs):
-    """ nextcord User Command Client
+        """ nextcord User Command Client
         The User Command Client For nextcord
     
         example:
@@ -731,7 +731,7 @@ class CommandClient(Client):
         return decorator
 
     def message_command(self, *args, **kwargs):
-    """ nextcord Message Command Client
+        """ nextcord Message Command Client
         The Message Command Client For nextcord
     
         example:
