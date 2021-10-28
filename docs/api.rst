@@ -74,7 +74,7 @@ Command_Client
     .. automethod:: user_command(guild_ids=[id1, id2])
         :decorator: 
     
-.. automethod:: subcommand()
+.. automethod:: ApplicationSubcommand.subcommand()
     :decorator:
    
 .. autoclass:: SlashOption()
