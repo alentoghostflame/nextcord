@@ -1966,6 +1966,16 @@ class Client:
                 ret.add(command)
         return ret
 
+    def _get_guild_commands(self) -> Dict[int, Set[ApplicationCommand]]:
+        ret = {}
+        for command in self._application_commands:
+            if command.is_guild:
+                for guild_id in command.guild_ids:
+                    if guild_id not in ret:
+                        ret[guild_id] = set()
+                    ret[guild_id].add(command)
+        return ret
+
     # async def register_bulk_application_commands(self):
     #     # TODO: Using Bulk upsert seems to delete all commands
     #     guild_payloads_to_bulk: Dict[int, List[dict]] = {}
