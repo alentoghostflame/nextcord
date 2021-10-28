@@ -710,9 +710,7 @@ class CommandClient(Client):
         self._cogs.append(cog)
 
     def user_command(self, *args, **kwargs):
-        """ nextcord User Command Client
-        
-        The User Command Client For nextcord
+        """ The Function For Making User Commands In nextcord
     
         example:
     
@@ -732,9 +730,7 @@ class CommandClient(Client):
         return decorator
 
     def message_command(self, *args, **kwargs):
-        """ nextcord Message Command Client
-        
-        The Message Command Client For nextcord
+        """ The Function For Making Message Commands In nextcord
     
         example:
     
@@ -754,9 +750,7 @@ class CommandClient(Client):
         return decorator
 
     def slash_command(self, *args, **kwargs):
-        """ The nextcord Slash Command Client
-        
-        The Interaction Command Client For nextcord
+        """ The Function For Making Interaction Commands In nextcord
     
         example:
     
