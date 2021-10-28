@@ -4,7 +4,7 @@ from nextcord.ext import commands
 bot = commands.Bot(command_prefix="/")
 
 @bot.slash_command(guild_ids=[GUILD_ID]) # Making the command and limiting the guilds
-async def main(interaction): #passing through interaction and indentifing the sub-command group name
+async def main(interaction): # passing through interaction and indentifing the sub-command group name
     await interaction.response.send_message("This will never get called if this has subcommands.") # An Function Never Called
 
 
