@@ -335,7 +335,7 @@ class ApplicationSubcommand:
         return ret
 
     def subcommand(self, **kwargs):
-        """ nextcord subcommands
+        """ Nextcord Subcommands
         
         A function that allows for nextcord slash commands
         
