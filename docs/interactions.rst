@@ -89,6 +89,7 @@ The example shown above responds to a user when they do a slash command, It is v
 How To Make Context Menu Commands
 ------------------------------------
 Context menu commmands display commands on a menu of a message/user
+
 User Commands
 ~~~~~~~~~~~~~~
 What you see below is a example of a simple user command, 
