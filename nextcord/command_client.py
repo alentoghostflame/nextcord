@@ -742,7 +742,7 @@ class CommandClient(Client):
         async def messagedump(self, interaction, message: Message):
             await interaction.response.send_message(f"Data Dump: {interaction.data}")
     
-     """
+    """
         def decorator(func: Callable):
             result = message_command(*args, **kwargs)(func)
 
