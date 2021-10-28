@@ -67,15 +67,19 @@ Command_Client
     
     .. automethod:: slash_command(guild_ids=[id1, id2])
         :decorator:
-
-    .. automethod:: ApplicationSubcommand()
-        :decorator:
    
     .. automethod:: message_command(guild_ids=[id1, id2])
         :decorator:   
     
     .. automethod:: user_command(guild_ids=[id1, id2])
         :decorator: 
+
+.. autoclass:: ApplicationCommand
+    :members:
+    :exclude-members: subcommand
+    
+    .. automethod:: subcommand()
+        :decorator:
    
 .. autoclass:: SlashOption()
     :members:
