@@ -67,20 +67,20 @@ Interaction Commands
 .. autofunction:: slash_command(guild_ids=[id1, id2])
     :decorator:
 
-.. decorator:: subcommand()
+.. autofunction:: subcommand()
     :decorator:
+   
+.. autofunction:: message_command()
+    :decorator:   
     
+.. autofunction:: user_command()
+    :decorator: 
+   
 .. autoclass:: SlashOption()
     :members:
 
 .. autoclass:: CommmandCog
     :members:      
-
-.. decorator:: message_command()
-    :decorator:   
-    
-.. decorator:: user_command()
-    :decorator: 
 
 Application Info
 ------------------
