@@ -1,7 +1,7 @@
 import nextcord
 from nextcord.ext import commands
 
-bot = commands.Bot()
+bot = commands.Bot(command_prefix="/")
 
 @bot.slash_command(guild_ids=[GUILD_ID]) # Making the command and limiting the guilds
 async def main(interaction): #passing through interaction and indentifing the sub-command group name
