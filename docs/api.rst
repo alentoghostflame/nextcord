@@ -61,16 +61,20 @@ Command_Client
 
 .. attributetable:: CommandClient
 
+.. autoclass:: Client
+    :members:
+    :exclude-members: slash_command, message_command, user_command, SlashOption, CommandCog
+
 .. autofunction:: slash_command(guild_ids=[id1, id2])
     :decorator:
 
 .. autofunction:: subcommand()
     :decorator:
    
-.. autofunction:: message_command()
+.. autofunction:: message_command(guild_ids=[id1, id2])
     :decorator:   
     
-.. autofunction:: user_command()
+.. autofunction:: user_command(guild_ids=[id1, id2])
     :decorator: 
    
 .. autoclass:: SlashOption()
