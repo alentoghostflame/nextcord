@@ -29,7 +29,7 @@ New Commands:
     async def example(interaction):
       await interaction.response.send_message("Slash Commands POOOG!")
       
-**Note:** You have to respond to messages using replys      
+**Note:** You have to respond to messages using response so discord counts it as responded to and not say ``interaction failed`` to the user
 
 For more info on interaction Look at the API Docs
 
