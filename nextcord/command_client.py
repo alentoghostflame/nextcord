@@ -711,6 +711,7 @@ class CommandClient(Client):
 
     def user_command(self, *args, **kwargs):
         """ nextcord User Command Client
+        
         The User Command Client For nextcord
     
         example:
@@ -732,6 +733,7 @@ class CommandClient(Client):
 
     def message_command(self, *args, **kwargs):
         """ nextcord Message Command Client
+        
         The Message Command Client For nextcord
     
         example:
@@ -752,6 +754,20 @@ class CommandClient(Client):
         return decorator
 
     def slash_command(self, *args, **kwargs):
+        """ The nextcord Slash Command Client
+        
+        The Interaction Command Client For nextcord
+    
+        example:
+    
+        .. code-block:: python3
+    
+            @bot.slash_command(name="ping")
+            async def ping(interaction):
+                await interaction.response.send_message("Pong!")
+
+    
+        """
         def decorator(func: Callable):
             result = slash_command(*args, **kwargs)(func)
 
