@@ -68,7 +68,7 @@ Command_Client
     .. automethod:: slash_command(guild_ids=[id1, id2])
         :decorator:
 
-    .. automethod:: sub_command()
+    .. automethod:: ApplicationSubcommand()
         :decorator:
    
     .. automethod:: message_command(guild_ids=[id1, id2])
