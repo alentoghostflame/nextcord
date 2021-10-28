@@ -15,33 +15,13 @@ v2.0.0
 --------
 Warning: **This Does Not Show The Changes In discord.py V2**
 
-Bug Fixes
-~~~~~~~~~~
-Fixed The Create_Sticker glitch
-
-Fixed RTD String Error
-
-Fixed Docstring grammar issue
-
-Fixed Typo In UI Docs
-
-Fix An Issue With Voice_Client Alias
-
-Fixed Alias Not Working On .ext.commands
-
-Fixed Indent List
-
-Fixed Discord Alias Issue
-
-
-
 Additions
 ~~~~~~~~~~
 Working Interaction commands
 
 Simple Voice recording 
 
-Docs for Selects And Interaction commands
+Docs for Interaction commands
 
 API Docs for Interaction commands
 
