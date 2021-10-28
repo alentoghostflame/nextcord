@@ -766,18 +766,6 @@ def slash_command(*args, **kwargs):
 
 
 def message_command(*args, **kwargs):
-    """ nextcord Message Command Client
-    The Message Command Client For nextcord
-    
-    example:
-    
-    .. code-block:: python3
-    
-        @bot.message_command(name="dump")
-        async def messagedump(self, interaction, message: Message):
-            await interaction.response.send_message(f"Data Dump: {interaction.data}")
-    
-    """
     def decorator(func: Callable):
         if isinstance(func, ApplicationCommand):
             raise TypeError("Callback is already an ApplicationCommandRequest.")
@@ -786,18 +774,6 @@ def message_command(*args, **kwargs):
 
 
 def user_command(*args, **kwargs):
-    """ nextcord User Command Client
-    The User Command Client For nextcord
-    
-    example:
-    
-    .. code-block:: python3
-    
-        @bot.user_command(name="dump")
-        async def userdump(self, interaction, member):
-            await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
-
-    """
     def decorator(func: Callable):
         if isinstance(func, ApplicationCommand):
             raise TypeError("Callback is already an ApplicationCommandRequest.")
