@@ -80,7 +80,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'nextcord'
-copyright = '2015-present, Rapptz'
+copyright = '2015-2021, Rapptz And 2021-present tag-epic'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -145,11 +145,10 @@ pygments_style = 'friendly'
 
 # Nitpicky mode options
 nitpick_ignore_files = [
-  "migrating_to_nextcord",
-  "migrating_2",
-  "migrating_to_async",
   "migrating",
+  "migrating_to_slash_commands",
   "whats_new",
+  "quickstart",
 ]
 
 # -- Options for HTML output ----------------------------------------------
@@ -164,7 +163,7 @@ html_context = {
   'discord_invite': 'https://discord.gg/ZebatWssCB',
   'discord_extensions': [
     ('nextcord.ext.commands', 'ext/commands'),
-    ('nextcord.ext.tasks', 'ext/tasks'),
+    ('nextcord.ext.tasks', 'ext/tasks')
   ],
 }
 

@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to nextcord
-===========================
+Welcome to the nextcord docs
+=============================
 
 .. image:: /images/snake.svg
 .. image:: /images/snake_dark.svg
@@ -19,6 +19,7 @@ for Discord, forked from discord.py.
 - Command extension to aid with bot creation
 - Easy to use with an object-oriented design
 - Optimised for both speed and memory
+- Advanced interaction command's
 
 Getting started
 -----------------
@@ -26,9 +27,9 @@ Getting started
 Is this your first time using the library? This is the place to get started!
 
 - **First steps:** :doc:`intro` | :doc:`quickstart` | :doc:`logging`
-- **Working with Discord:** :doc:`discord` | :doc:`intents`
-- **Migrating from discord.py**: :ref:`Migrating to nextcord <migrating_nextcord>`
+- **Working with Nextcord:** :doc:`discord` | :doc:`intents`
 - **Examples:** Many examples are available in the :resource:`repository <examples>`.
+- **Interaction Commands:** Interaction Tutorial :doc:`interactions` Migrating: :doc:`migrating_to_slash_commands`
 
 Getting help
 --------------
@@ -75,5 +76,5 @@ If you're looking for something related to the project itself, it's here.
   whats_new
   version_guarantees
   migrating
-  migrating_2
-  migrating_to_nextcord
+  interactions
+  migrating_to_slash_commands

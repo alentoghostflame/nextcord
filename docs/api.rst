@@ -46,7 +46,7 @@ Client
         :decorator:
 
     .. automethod:: Client.fetch_guilds
-        :async-for:
+        :async-for:     
 
 AutoShardedClient
 ~~~~~~~~~~~~~~~~~~
@@ -55,6 +55,33 @@ AutoShardedClient
 
 .. autoclass:: AutoShardedClient
     :members:
+    
+Command_Client
+---------------
+
+.. attributetable:: CommandClient
+
+.. autoclass:: CommandClient
+    :members:
+    :exclude-members: slash_command, message_command, user_command, SlashOption, CommandCog
+    
+    .. automethod:: slash_command(guild_ids=[id1, id2])
+        :decorator:
+   
+    .. automethod:: message_command(guild_ids=[id1, id2])
+        :decorator:   
+    
+    .. automethod:: user_command(guild_ids=[id1, id2])
+        :decorator: 
+    
+.. automethod:: ApplicationSubcommand.subcommand()
+    :decorator:
+   
+.. autoclass:: SlashOption()
+    :members:
+
+.. autoclass:: CommmandCog
+    :members:      
 
 Application Info
 ------------------
@@ -3299,6 +3326,7 @@ SyncWebhookMessage
     :members:
 
 .. _discord_api_abcs:
+
 
 Abstract Base Classes
 -----------------------
