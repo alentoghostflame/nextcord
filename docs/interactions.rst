@@ -94,7 +94,7 @@ Context menu commmands display commands on a menu of a message/user
 User Commands
 ~~~~~~~~~~~~~~
 What you see below is a example of a simple user command, 
-Made by alento it's a user dump command that dumps user data
+It's a user dump command that dumps user data
 
 .. code-block:: python3
 
@@ -105,7 +105,7 @@ Made by alento it's a user dump command that dumps user data
 Message Commands
 ~~~~~~~~~~~~~~~~~
 What you see below is a example of a simple message command, 
-Made by alento it's a message dump command that dumps message data
+It's a message dump command that dumps message data
 
 .. code-block:: python3
 
