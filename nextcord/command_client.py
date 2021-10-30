@@ -42,17 +42,17 @@ class InvalidCommandType(Exception):
 class SlashOption:
        """Slash Command Fields For nextcord
 
-    example:
+          example:
 
-    .. code-block:: python3
+          .. code-block:: python3
 
-        @bot.slash_command(name="help")
-        async def help(interaction: Interaction,
-                setting: str = SlashOption(name=settings, description="Configure Your Settings")):
-        if setting == "music"
-            await interaction.response.send_message(f"MOOSIC")
-        if setting == "moderation"
-            await interaction.response.send_message(f"Mods party? POOG")
+              @bot.slash_command(name="help")
+              async def help(interaction: Interaction,
+                     setting: str = SlashOption(name=settings, description="Configure Your Settings")):
+              if setting == "music"
+                 await interaction.response.send_message(f"MOOSIC")
+              if setting == "moderation"
+                 await interaction.response.send_message(f"Mods party? POOG")
         """
     def __init__(self, name: str = None, description: str = None, required: bool = None, choices: dict = None,
                  default: Any = None, channel_types: List[ChannelType, ...] = None):
