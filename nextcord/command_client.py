@@ -6,7 +6,6 @@ from typing import Dict, List, Optional, Union, Any, Callable, Tuple, Set
 
 from .role import Role
 from .user import User
-from .client import Client
 from .member import Member
 from .message import Message
 from .abc import GuildChannel
@@ -607,7 +606,7 @@ class CommandCog:
         return self.__cog_to_register__
 
 
-class CommandClient(Client):
+class CommandClient:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._cogs: List[CommandCog] = []  # TODO: Turn this into dict with names.
