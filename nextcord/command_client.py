@@ -40,20 +40,6 @@ class InvalidCommandType(Exception):
 
 
 class SlashOption:
-   """Slash Command Fields For nextcord
-
-          example:
-
-          .. code-block:: python3
-
-              @bot.slash_command(name="help")
-              async def help(interaction: Interaction,
-                     setting: str = SlashOption(name=settings, description="Configure Your Settings")):
-              if setting == "music"
-                 await interaction.response.send_message(f"MOOSIC")
-              if setting == "moderation"
-                 await interaction.response.send_message(f"Mods party? POOG")
-    """
     def __init__(self, name: str = None, description: str = None, required: bool = None, choices: dict = None,
                  default: Any = None, channel_types: List[ChannelType, ...] = None):
         if not choices:
@@ -740,18 +726,6 @@ class CommandClient(Client):
         self._cogs.append(cog)
 
     def user_command(self, *args, **kwargs):
-        """The Function For Making User Commands In nextcord
-
-        Usable In Both Cogs And Non-Cogs
-
-        example:
-
-        .. code-block:: python3
-
-            @bot.user_command(name="dump")
-            async def userdump(interaction, member):
-                await interaction.response.send_message(f"Member: {member}, Data Dump: {interaction.data}")
-        """
         def decorator(func: Callable):
             result = user_command(*args, **kwargs)(func)
             # self.add_application_command_request(result)
@@ -760,19 +734,6 @@ class CommandClient(Client):
         return decorator
 
     def message_command(self, *args, **kwargs):
-        """The Function For Making Message Commands In nextcord
-
-        Usable In Both Cogs And Non-Cogs
-
-        example:
-
-        .. code-block:: python3
-
-            @bot.message_command(name="dump")
-            async def messagedump(interaction, message: Message):
-                await interaction.response.send_message(f"Data Dump: {interaction.data}")
-
-        """
         def decorator(func: Callable):
             result = message_command(*args, **kwargs)(func)
             # self.add_application_command_request(result)
@@ -781,20 +742,6 @@ class CommandClient(Client):
         return decorator
 
     def slash_command(self, *args, **kwargs):
-        """The Function For Making Interaction Commands In nextcord
-
-        Usable In Cogs And Non-Cogs
-
-        example:
-
-        .. code-block:: python3
-
-            @bot.slash_command(name="ping")
-            async def ping(interaction):
-                await interaction.response.send_message("Pong!")
-
-
-        """
         def decorator(func: Callable):
             result = slash_command(*args, **kwargs)(func)
             # self.add_application_command_request(result)
