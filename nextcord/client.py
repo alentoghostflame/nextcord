@@ -33,6 +33,7 @@ from typing import Any, Callable, Coroutine, Dict, Generator, List, Optional, Se
 
 import aiohttp
 
+from .command_client import CommandClient
 from .user import User, ClientUser
 from .invite import Invite
 from .template import Template
@@ -112,7 +113,7 @@ def _cleanup_loop(loop: asyncio.AbstractEventLoop) -> None:
         _log.info('Closing the event loop.')
         loop.close()
 
-class Client:
+class Client(CommandClient):
     r"""Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
 
