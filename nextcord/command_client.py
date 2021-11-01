@@ -674,7 +674,7 @@ class CommandCog:
         return self.__cog_to_register__
 
 
-class CommandClient:
+class CommandClient(Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._cogs: List[CommandCog] = []  # TODO: Turn this into dict with names.
