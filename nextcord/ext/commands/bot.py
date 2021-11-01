@@ -36,7 +36,6 @@ import types
 from typing import Any, Callable, Mapping, List, Dict, TYPE_CHECKING, Optional, TypeVar, Type, Union
 
 import nextcord
-import nextcord.command_client
 
 from .core import GroupMixin
 from .view import StringView
@@ -44,6 +43,7 @@ from .context import Context
 from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
+from .client import Client
 
 
 if TYPE_CHECKING:
@@ -1039,7 +1039,7 @@ class BotBase(GroupMixin):
         await self.process_commands(message)
 
 # class Bot(BotBase, nextcord.Client):
-class Bot(BotBase, nextcord.command_client.CommandClient):
+class Bot(BotBase, Client):
     """Represents a discord bot.
 
     This class is a subclass of :class:`nextcord.Client` and as a result
