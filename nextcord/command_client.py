@@ -40,7 +40,7 @@ class InvalidCommandType(Exception):
 
 
 class SlashOption:
-       """Slash Command Fields For nextcord
+   """Slash Command Fields For nextcord
 
           example:
 
@@ -53,7 +53,7 @@ class SlashOption:
                  await interaction.response.send_message(f"MOOSIC")
               if setting == "moderation"
                  await interaction.response.send_message(f"Mods party? POOG")
-        """
+    """
     def __init__(self, name: str = None, description: str = None, required: bool = None, choices: dict = None,
                  default: Any = None, channel_types: List[ChannelType, ...] = None):
         if not choices:
