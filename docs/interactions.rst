@@ -53,7 +53,7 @@ As shown in the demistration below you make a main slash command or a Dummy slas
         
 Fields And Requirements
 ------------------------
-Fields are mean't to facilitate an easier way to fill info, Letting people doing a slash commands know what to fill in
+Fields are mean't to facilitate an easier way to fill info, Letting people using your slash command get a different response for each answer.
 
 Nextcord's implementation of slash commands has fields and is very simple, In the example below is a field
 
