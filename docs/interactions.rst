@@ -7,7 +7,7 @@
 Interaction Commands
 ======================
 
-As discord have added interaction commands a feature with alot of possiblities and ideas we at nextcord have decided to add them to our fleet of features,
+Since Discord has added interaction commands a feature with many possibilities, we at Nextcord have decided to add them to our fleet of features.
 
 This doc will explain the innerworkings and how to use interaction commmands.
 
