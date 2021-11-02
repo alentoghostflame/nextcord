@@ -29,7 +29,7 @@ The way it works is that you use the slash_command function to interact with the
 How To Use Sub-Commands
 -------------------------
 
-The way sub-commands work is that you will make a normal slash command that will never be called then make the sub-commands and have them do the work of real slash commands, There is no difference to slash commands and sub-commands, The Only thing you will need to change is functions. 
+The way sub-commands work is that you make a normal slash command that will never be called, and then make the sub-commands and have them do the work of real slash commands. There is no difference with slash commands and sub-commands. The only thing you will need to change is functions.
 
 As shown in the demistration below you make a main slash command or a Dummy slash command and build sub-commands off it
 
