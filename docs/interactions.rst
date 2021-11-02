@@ -85,7 +85,7 @@ Show below is an example of a simple command running in a cog.
 
     bot.add_cog(ExampleCog())
 
-The example shown above responds to a user when they do a slash command, It is very identical to a normal slash command and to normal commands in general.
+The example shown above responds to a user when they do a slash command. It is identical to a normal slash command and to normal commands in general.
 
 How To Make Context Menu Commands
 ------------------------------------
