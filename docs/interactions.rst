@@ -93,8 +93,8 @@ Context menu commmands display commands on a menu of a message/user
 
 User Commands
 ~~~~~~~~~~~~~~
-What you see below is a example of a simple user command, 
-It's a user dump command that dumps user data
+What you see below is a example of a simple user command.
+It is a user dump command that dumps user data.
 
 .. code-block:: python3
 
