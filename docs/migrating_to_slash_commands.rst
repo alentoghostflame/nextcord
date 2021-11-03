@@ -36,7 +36,7 @@ For more info on interaction Look at the API Docs
 Converting Normal Commands To Slash Commands
 ---------------------------------------------
 * Step 1
-You're gonna want to replace ``command`` or ``event`` with slash_command
+You're gonna want to replace ``command`` or ``event`` with ``slash_command``
 
 * Step 2
 Replace ctx with interaction and replace any other next to ctx (for more info look at the API docs)
