@@ -19,7 +19,7 @@ Old Commands:
     async def example(ctx):
       await ctx.send("Hey!")
       
-**This Way Is Deprecated For Slash Commands**
+**This Way Is Deprecated For Slash Commands And CANT Be Used**
 
 New Commands:
 
@@ -39,7 +39,4 @@ Converting Normal Commands To Slash Commands
 You're gonna want to replace ``command`` or ``event`` with ``slash_command``
 
 * Step 2
-Replace ctx with interaction and replace any other next to ctx (for more info look at the API docs)
-
-* Step 3
-Enjoy Your Slashy Bot
+Replace ``ctx`` with ``interaction`` and replace any other next to ``ctx`` with ``interaction`` (for more info look at the API docs)
