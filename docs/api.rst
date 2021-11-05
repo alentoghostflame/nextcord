@@ -56,23 +56,17 @@ AutoShardedClient
 .. autoclass:: AutoShardedClient
     :members:
     
-Command_Client
----------------
+Application_Command    
+---------------------
 
-.. attributetable:: CommandClient
-
-.. autoclass:: CommandClient
-    :members:
-    :exclude-members: slash_command, message_command, user_command, SlashOption, CommandCog
-    
-    .. automethod:: slash_command(guild_ids=[id1, id2])
-        :decorator:
+.. automethod:: slash_command(guild_ids=[id1, id2])
+    :decorator:
    
-    .. automethod:: message_command(guild_ids=[id1, id2])
-        :decorator:   
+.. automethod:: message_command(guild_ids=[id1, id2])
+    :decorator:   
     
-    .. automethod:: user_command(guild_ids=[id1, id2])
-        :decorator: 
+.. automethod:: user_command(guild_ids=[id1, id2])
+    :decorator: 
     
 .. automethod:: ApplicationSubcommand.subcommand()
     :decorator:
@@ -82,6 +76,7 @@ Command_Client
 
 .. autoclass:: CommmandCog
     :members:      
+
 
 Application Info
 ------------------
