@@ -74,10 +74,6 @@ Application_Command
 .. autoclass:: SlashOption()
     :members:
 
-.. autoclass:: CommmandCog
-    :members:      
-
-
 Application Info
 ------------------
 
