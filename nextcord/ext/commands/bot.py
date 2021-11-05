@@ -43,6 +43,7 @@ from .context import Context
 from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
+from nextcord.command_client import CommandClient
 
 
 if TYPE_CHECKING:
@@ -1036,7 +1037,6 @@ class BotBase(GroupMixin):
 
     async def on_message(self, message):
         await self.process_commands(message)
-
 
 class Bot(BotBase, nextcord.Client):
     """Represents a discord bot.

@@ -5,23 +5,40 @@
 
 .. _whats_new:
 
-Changelog
-============
+The NextCord Update Changelog
+==============================
 
 This page keeps a detailed human-friendly rendering of what's new and changed
 in specific versions.
 
-.. _vp2p0p0:
-
 v2.0.0
 --------
+Warning: **This Does Not Show The Changes In discord.py V2**
 
-The changeset for this version are too big to be listed here, for more information please
-see :ref:`the migrating page <migrating_2_0>`. Since the original discord.py repro ended
-its work this is the point where our fork comes in place. Please see
-:ref:`the migrating page <migrating_nextcord>` for more informations.
+Additions
+~~~~~~~~~~
+Working Interaction commands
 
-.. _vp1p7p3:
+Simple Voice recording 
+
+Docs for Interaction commands
+
+API Docs for Interaction commands
+
+Add start_embedded_activities As A Permission
+
+Add Guild.bots And Guild.humans
+
+Added A on_raw_typing Event
+
+Make supressing users in a VC throw better errors
+
+Removed
+~~~~~~~
+Removed Support For Japanese Docs
+
+
+.. _vp2p0p0:
 
 v1.7.3
 --------
