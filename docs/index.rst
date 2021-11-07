@@ -20,6 +20,7 @@ for Discord, forked from discord.py.
 - Easy to use with an object-oriented design
 - Optimised for both speed and memory
 - Advanced interaction command's
+- Covers 100% of discord's current API
 
 Getting started
 -----------------
