@@ -62,9 +62,10 @@ Nextcord's implementation of slash commands has fields and is very simple, In th
      @bot.slash_command(name="help")
      async def help(interaction: Interaction,
                     setting: str = SlashOption(name=settings, description="Configure Your Settings")
-         if setting == "music"
+                    ):
+         if setting == "music":
             await interaction.response.send_message(f"MOOSIC")
-         if setting == "moderation"
+         if setting == "moderation":
             await interaction.response.send_message(f"Mods party? POOG")
 
 
