@@ -43,7 +43,6 @@ from .context import Context
 from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
-from nextcord.application_client import CommandClient
 
 
 if TYPE_CHECKING:
