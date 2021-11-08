@@ -24,14 +24,22 @@ This right here is a simple ping pong Command made with Nextcords slash feature.
     async def ping(interaction):
         await interaction.response.send_message("Pong!")
         
-The way it works is that you use the slash_command function to interact with the DiscordAPI. "name" Is the name of your slash command, and guild_ids is used to limit the guilds that the slash command is available to. This is also useful for testing, as global slash commands can take up to an hour to register.
+The way it works is that you use the ``slash_command`` function to interact with the Discord API. The ``name`` parameter is the name of your slash command.
+
+``guild_ids`` is used to limit the guilds that the slash command is available to. This is also useful for testing, as global slash commands can take up to an hour to register.
+
+Example:
+
+.. code-block:: python3
+      
+    @bot.slash_command(guild_ids[id1, id2])
 
 How To Use Sub-Commands
 -------------------------
 
 The way sub-commands work is that you make a normal slash command that will never be called, and then make the sub-commands and have them do the work of real slash commands. There is no difference with slash commands and sub-commands. The only thing you will need to change is functions.
 
-As shown in the demistration below you make a main slash command or a Dummy slash command and build sub-commands off it
+As shown in the demonstration below you make a main slash command or a dummy slash command and build sub-commands off it
 
 .. code-block:: python3
 
@@ -48,20 +56,21 @@ As shown in the demistration below you make a main slash command or a Dummy slas
     @main.subcommand(name="sub2", description="Sub2s Description")
     async def subcommand_two(interaction: Interaction,
                             arg1: str = SlashOption(name="argument1", description="The first argument."),
-                            arg2: str = SlashOption(description="The second argument!", default=None)):
+                            arg2: str = SlashOption(description="The second argument!", default=None)
+                              ):
         await interaction.response.send_message(f"This is subcommand 2 with arg1 {arg1} and arg2 {arg2}")
         
 Fields And Requirements
 ------------------------
-Fields are mean't to facilitate an easier way to fill info, Letting people using your slash command get a different response for each answer.
+Fields are mean't to facilitate an easier way to fill info, letting people using your slash command get a different response for each answer.
 
-Nextcord's implementation of slash commands has fields and is very simple, In the example below is a field
+Nextcord's implementation of slash commands has fields and is very simple. in the example below is a field.
 
 .. code-block:: python3
      
      @bot.slash_command(name="help")
      async def help(interaction: Interaction,
-                    setting: str = SlashOption(name=settings, description="Configure Your Settings")
+                    setting: str = SlashOption(name="settings", description="Configure Your Settings")
                     ):
          if setting == "music":
             await interaction.response.send_message(f"MOOSIC")
@@ -75,11 +84,15 @@ Show below is an example of a simple command running in a cog.
 
 .. code-block:: python3
       
+      import nextcord
+      from nextcord.ext import commands
+      from nextcord.application_command import slash_command
+      
     class ExampleCog(commands.Cog):
         def __init__(self):
             self.count = 0
 
-        @slash_command(name="cogexample", guild_ids=[GUILD_ID])
+        @slash_command(name="cogexample")
         async def slash_example_cog_command(self, interaction):
             await interaction.response.send_message("Hello i am a slash command in a cog!")
 
@@ -106,7 +119,7 @@ It is a user dump command that dumps user data.
 Message Commands
 ~~~~~~~~~~~~~~~~~
 What you see below is a example of a simple message command, 
-It's a message dump command that dumps message data
+It's a message dump command that dumps message data.
 
 .. code-block:: python3
 
