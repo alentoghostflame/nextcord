@@ -74,8 +74,13 @@ Nextcord's implementation of slash commands has fields and is very simple. in th
                     ):
          if setting == "music":
             await interaction.response.send_message(f"MOOSIC")
+         else:
+            return
+   
          if setting == "moderation":
             await interaction.response.send_message(f"Mods party? POOG")
+         else:
+            return
 
 
 How To Make Slash Commands In Cogs
