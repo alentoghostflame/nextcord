@@ -19,7 +19,7 @@ for Discord, forked from discord.py.
 - Command extension to aid with bot creation
 - Easy to use with an object-oriented design
 - Optimised for both speed and memory
-- Advanced interaction command's
+- Advanced Interaction and Application Commands
 
 Getting started
 -----------------
