@@ -45,7 +45,7 @@ As shown in the demistration below you make a main slash command or a Dummy slas
         await interaction.response.send_message("This is subcommand 1!")
 
 
-    @main.subcommand(name="sub2", description="This is subcommand 2 tricked out!")
+    @main.subcommand(name="sub2", description="Sub2s Description")
     async def subcommand_two(interaction: Interaction,
                             arg1: str = SlashOption(name="argument1", description="The first argument."),
                             arg2: str = SlashOption(description="The second argument!", default=None)):
@@ -88,9 +88,9 @@ Show below is an example of a simple command running in a cog.
 
 The example shown above responds to a user when they do a slash command. It is identical to a normal slash command and to normal commands in general.
 
-How To Make Context Menu Commands
+How To Make Application Commands
 ------------------------------------
-Context menu commmands display commands on a menu of a message/user
+Application commands display commands on a menu of a message/user
 
 User Commands
 ~~~~~~~~~~~~~~
