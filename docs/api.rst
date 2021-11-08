@@ -59,13 +59,13 @@ AutoShardedClient
 Application_Command    
 ---------------------
 
-.. automethod:: slash_command(guild_ids=[id1, id2])
+.. autoclass:: slash_command
     :decorator:
    
-.. automethod:: message_command(guild_ids=[id1, id2])
+.. autoclass:: message_command
     :decorator:   
     
-.. automethod:: user_command(guild_ids=[id1, id2])
+.. autoclass:: user_command
     :decorator: 
     
 .. automethod:: ApplicationSubcommand.subcommand()
