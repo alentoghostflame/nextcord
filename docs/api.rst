@@ -46,7 +46,7 @@ Client
         :decorator:
 
     .. automethod:: Client.fetch_guilds
-        :async-for:     
+        :async-for:
 
 AutoShardedClient
 ~~~~~~~~~~~~~~~~~~
