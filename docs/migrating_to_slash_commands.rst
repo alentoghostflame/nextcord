@@ -39,4 +39,4 @@ Converting Normal Commands To Slash Commands
 You're gonna want to replace ``command`` or ``event`` with ``slash_command``
 
 * Step 2
-Replace ``ctx`` with ``interaction`` and replace any other next to ``ctx`` with ``interaction`` for more info look here :class:`Interaction` 
+Replace ``ctx`` with ``interaction`` and replace any other next to ``ctx`` with ``interaction`` for more info look at the api Reference 
