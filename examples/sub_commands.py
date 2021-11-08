@@ -22,5 +22,3 @@ async def subcommand_two(interaction: Interaction, # passing in interaction
     
     
 bot.run("TOKEN")    
-
-
