@@ -27,9 +27,9 @@ New Commands:
     
     @bot.slash_command()
     async def example(interaction):
-      await interaction.response.send_message("Slash Commands POOOG!")
+      await interaction.response.send_message("Oye mate slash command here!")
       
-**Note:** You have to respond to messages using response so discord counts it as responded to and not say ``interaction failed`` to the user
+**Note:** You have to respond to messages using response so discord counts it as responded to; And not say ``interaction failed`` to the user
 
 For more info on interaction Look at the API Docs
 
