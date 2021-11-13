@@ -32,7 +32,7 @@ Example:
 
 .. code-block:: python3
       
-    @bot.slash_command(guild_ids[id1, id2])
+    @bot.slash_command(guild_ids=[id1, id2])
 
 How To Use Sub-Commands
 -------------------------
