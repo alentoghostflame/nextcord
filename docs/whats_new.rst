@@ -27,7 +27,7 @@ API Docs for Interaction commands
 
 Add start_embedded_activities As A Permission
 
-Add Guild.bots And Guild.humans
+Added :attr:`Guild.bots` And :attr:`Guild.humans`
 
 Added A on_raw_typing Event
 
