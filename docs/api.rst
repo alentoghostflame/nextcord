@@ -65,7 +65,7 @@ Application_Command
 .. autofunction:: message_command
     :decorator:   
     
-.. autoclass:: user_command
+.. autofunction:: user_command
     :decorator: 
     
 .. automethod:: ApplicationSubcommand.subcommand()
