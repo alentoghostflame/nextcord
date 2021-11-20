@@ -163,7 +163,7 @@ html_context = {
   'discord_invite': 'https://discord.gg/ZebatWssCB',
   'discord_extensions': [
     ('nextcord.ext.commands', 'ext/commands'),
-    ('nextcord.ext.tasks', 'ext/tasks')
+    ('nextcord.ext.tasks', 'ext/tasks'),
   ],
 }
 
