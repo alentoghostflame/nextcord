@@ -32,7 +32,7 @@ New Commands:
       
 **Note:** You have to respond to messages using response so discord counts it as responded to; And not say ``interaction failed`` to the user
 
-For more info on interaction Look at the API Docs
+For more info on interaction Look at the :doc:`api` Docs
 
 Converting Normal Commands To Slash Commands
 ---------------------------------------------
