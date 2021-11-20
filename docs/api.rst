@@ -68,10 +68,10 @@ Application_Command
 .. autofunction:: user_command
     :decorator: 
     
-.. automethod:: ApplicationSubcommand.subcommand()
+.. automethod:: ApplicationSubcommand.subcommand
     :decorator:
    
-.. autoclass:: SlashOption()
+.. autoclass:: SlashOption
     :members:
 
 Application Info
