@@ -59,7 +59,7 @@ AutoShardedClient
 Application_Command    
 ---------------------
 
-.. autoclass:: slash_command
+.. autofunction:: slash_command
     :decorator:
    
 .. autoclass:: message_command
