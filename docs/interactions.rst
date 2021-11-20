@@ -132,11 +132,3 @@ It's a message dump command that dumps message data.
     async def messagedump(interaction, message: Message):
         await interaction.response.send_message(f"Data Dump: {interaction.data}")
         
-
-Role And User Permissions
----------------------------
-Feature Is **Coming Soon**
-
-Autocomplete
--------------
-Feature Is **Coming Soon**
