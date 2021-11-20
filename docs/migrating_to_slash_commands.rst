@@ -40,4 +40,4 @@ Converting Normal Commands To Slash Commands
 You're gonna want to replace ``command`` or ``event`` with ``slash_command``
 
 * Step 2
-Replace :class:`context` with :class:`interaction` and replace any other next to :class:`context` with :class:`interaction`
+Replace :``ctx`` with ``interaction`` and replace any other next to ``ctx`` with ``interaction``
