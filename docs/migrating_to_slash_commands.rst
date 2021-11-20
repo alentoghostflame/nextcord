@@ -37,7 +37,9 @@ For more info on interaction Look at the :doc:`api` Docs
 Converting Normal Commands To Slash Commands
 ---------------------------------------------
 * Step 1
+
 You're gonna want to replace ``command`` with ``slash_command``
 
 * Step 2
+
 Replace :``ctx`` with ``interaction`` and replace any other next to ``ctx`` with ``interaction``
