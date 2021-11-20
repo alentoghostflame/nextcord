@@ -62,7 +62,7 @@ Application_Command
 .. autofunction:: slash_command
     :decorator:
    
-.. autoclass:: message_command
+.. autofunction:: message_command
     :decorator:   
     
 .. autoclass:: user_command
