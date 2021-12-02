@@ -88,10 +88,6 @@ Show below is an example of a simple command running in a cog.
 
 .. code-block:: python3
       
-      import nextcord
-      from nextcord.ext import commands
-      from nextcord.application_command import slash_command
-      
     class ExampleCog(commands.Cog):
         def __init__(self):
             self.count = 0
