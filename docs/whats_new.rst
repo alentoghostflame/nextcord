@@ -5,8 +5,8 @@
 
 .. _whats_new:
 
-The NextCord Update Changelog
-==============================
+Changelog
+=========
 
 This page keeps a detailed human-friendly rendering of what's new and changed
 in specific versions.
