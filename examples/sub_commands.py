@@ -16,8 +16,8 @@ async def sub1(interaction): # Making The Sub Command Name And Passing Through I
 
 @main.subcommand(name="sub2", description="This is subcommand 2 tricked out!") # Identifying The Sub-Command And Adding A Descripton
 async def subcommand_two(interaction: Interaction, # passing in interaction
-                        arg1: str = SlashOption(name="argument1", description="The first argument."), # Field 1
-                        arg2: str = SlashOption(description="The second argument!", default=None)): # Field 2
+                         arg1: str = SlashOption(name="argument1", description="The first argument."), # Field 1
+                         arg2: str = SlashOption(description="The second argument!", default=None)): # Field 2
     await interaction.response.send_message(f"This is subcommand 2 with arg1 {arg1} and arg2 {arg2}") # Responding With The Args/Fields
     
     
