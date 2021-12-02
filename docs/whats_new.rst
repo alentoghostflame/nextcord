@@ -13,7 +13,7 @@ in specific versions.
 
 v2.0.0
 --------
-**Warning: This Does Not Show The Changes In discord.py V2**
+**Warning: This Does Not Show The Changes In discord.py V2** They are shown in :doc:`migrating`
 
 Additions
 ~~~~~~~~~~
