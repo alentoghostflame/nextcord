@@ -11,34 +11,27 @@ Changelog
 This page keeps a detailed human-friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p0p0:
+
 v2.0.0
 --------
 **Warning: This Does Not Show The Changes In discord.py V2** They are shown in :doc:`migrating`
 
+
 Additions
 ~~~~~~~~~~
-Working Interaction commands
 
-Simple Voice recording 
+- :func:`slash_command` Was Added Along With :func:`user_command` & :func:`message_command` Adding support for application commands (:issue:`174`)
+    - This also added :class:`SlashOption` & :func:`ApplicationSubcommand.subcommand`
 
-Docs for Interaction commands
+- Add :attr:`Permissions.start_embedded_activities` As A Permission
 
-API Docs for Interaction commands
-
-Add start_embedded_activities As A Permission
-
-Added :attr:`Guild.bots` And :attr:`Guild.humans`
-
-Added A on_raw_typing Event
-
-Make supressing users in a VC throw better errors
+- Added :attr:`Guild.bots` & :attr:`Guild.humans`
 
 Removed
 ~~~~~~~
-Removed Support For Japanese Docs
 
-
-.. _vp2p0p0:
+- Removed Support For Japanese Docs
 
 v1.7.3
 --------
