@@ -22,6 +22,7 @@ Additions
 ~~~~~~~~~~
 
 - :func:`slash_command` Was added along with :func:`user_command` & :func:`message_command` Adding support for application commands (:issue:`174`)
+    
     - This also added :class:`SlashOption` & :func:`ApplicationSubcommand.subcommand`
 
 - Add :attr:`Permissions.start_embedded_activities` as a Permission
