@@ -70,17 +70,16 @@ Nextcord's implementation of slash commands has fields and is very simple. in th
 .. code-block:: python3
      
      @bot.slash_command(name="help")
-     async def help(interaction: Interaction,
-                    setting: str = SlashOption(name="settings", description="Configure Your Settings")
-                    ):
-               if setting == "music":
-                  await interaction.response.send_message(f"MOOSIC")
-
-               elif setting == "moderation":
-                  await interaction.response.send_message(f"Mods party? POOG")
-
-               else:
-                  await interaction.response.send_message("Odd, I don't know that setting")
+     async def help(
+         interaction: Interaction,
+         setting: str = SlashOption(name="settings", description="Configure Your Settings")
+     ):
+         if setting == "music":
+             await interaction.response.send_message(f"MOOSIC")
+         elif setting == "moderation":
+             await interaction.response.send_message(f"Mods party? POOG")
+         else:
+             await interaction.response.send_message("Odd, I don't know that setting")
 
 
 How To Make Slash Commands In Cogs
