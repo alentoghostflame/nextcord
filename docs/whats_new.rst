@@ -25,7 +25,6 @@ Additions
     
 .. note::
 
-
     This also added :class:`SlashOption` & :func:`ApplicationSubcommand.subcommand`
 
 - Add :attr:`Permissions.start_embedded_activities` as a Permission
