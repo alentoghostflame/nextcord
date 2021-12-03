@@ -101,4 +101,4 @@ If you want to use slash commands remember to turn on the applications.commands 
 
 .. image:: /images/slash_scope.jpg
 
-For more info on slash commands go to :doc:`/interactions`
+For more info on slash commands go to :doc:`interactions`
