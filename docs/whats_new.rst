@@ -8,33 +8,6 @@
 Changelog
 =========
 
-This page keeps a detailed human-friendly rendering of what's new and changed
-in specific versions.
-
-.. _vp2p0p0:
-
-v2.0.0
---------
-**Warning: This Does Not Show The Changes In discord.py V2** They are shown in :doc:`migrating`
-
-
-Additions
-~~~~~~~~~~
-
-- :func:`slash_command` Was added along with :func:`user_command` & :func:`message_command` Adding support for application commands (:issue:`174`)
-    
-.. note::
-
-    This also added :class:`SlashOption` & :func:`ApplicationSubcommand.subcommand`
-
-- Add :attr:`Permissions.start_embedded_activities` as a Permission
-
-- Added :attr:`Guild.bots` & :attr:`Guild.humans`
-
-Removed
-~~~~~~~
-
-- Removed Support For Japanese Docs
 
 v1.7.3
 --------
