@@ -1,6 +1,6 @@
 import nextcord
+from nextcord import user_command
 from nextcord.ext import commands
-from nextcord.application_command import user_command
 
 bot = commands.Bot(command_prefix="/")
 
