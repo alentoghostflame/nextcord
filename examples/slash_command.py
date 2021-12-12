@@ -1,6 +1,6 @@
 import nextcord
+from nextcord import slash_command
 from nextcord.ext import commands
-from nextcord.application_command import slash_command
 
 bot = commands.Bot(command_prefix="/")
 
