@@ -557,6 +557,12 @@ class BotBase(GroupMixin):
         self.__cogs[cog_name] = cog
         # TODO: This blind call to nextcord.Client is dumb.
         super().add_cog(cog)
+        # Info: To add the ability to use ApplicationCommands in Cogs, the Client has to be aware of cogs. For minimal
+        # editing, BotBase must call Client's add_cog function. While it all works out in the end because Bot and
+        # AutoShardedBot both end up subclassing Client, this is BotBase and BotBase does not subclass Client, hence
+        # this being a "blind call" to nextcord.Client
+        # Whatever warning that your IDE is giving about the above line of code is correct. When Bot + BotBase
+        # inevitably get reworked, make me happy and fix this.
 
     def get_cog(self, name: str) -> Optional[Cog]:
         """Gets the cog instance requested.
@@ -656,7 +662,12 @@ class BotBase(GroupMixin):
                 if _is_submodule(name, module):
                     del sys.modules[module]
 
-    def _load_from_module_spec(self, spec: importlib.machinery.ModuleSpec, key: str) -> None:
+    def _load_from_module_spec(
+            self,
+            spec: importlib.machinery.ModuleSpec,
+            key: str,
+            extras: Optional[Dict[str, Any]] = None
+    ) -> None:
         # precondition: key not in self.__extensions
         lib = importlib.util.module_from_spec(spec)
         sys.modules[key] = lib
@@ -672,8 +683,18 @@ class BotBase(GroupMixin):
             del sys.modules[key]
             raise errors.NoEntryPointError(key)
 
+        params = inspect.signature(setup).parameters
+        has_kwargs = len(params) > 1
+
+        if extras is not None:
+            if not has_kwargs:
+                raise errors.InvalidSetupArguments(key)
+            elif not isinstance(extras, dict):
+                raise errors.ExtensionFailed(key, TypeError("Expected 'extras' to be a dictionary"))
+
+        extras = extras or {}
         try:
-            setup(self)
+            setup(self, **extras)
         except Exception as e:
             del sys.modules[key]
             self._remove_module_references(lib.__name__)
@@ -688,7 +709,13 @@ class BotBase(GroupMixin):
         except ImportError:
             raise errors.ExtensionNotFound(name)
 
-    def load_extension(self, name: str, *, package: Optional[str] = None) -> None:
+    def load_extension(
+            self,
+            name: str,
+            *,
+            package: Optional[str] = None,
+            extras: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Loads an extension.
 
         An extension is a python module that contains commands, cogs, or
@@ -710,6 +737,11 @@ class BotBase(GroupMixin):
             Defaults to ``None``.
 
             .. versionadded:: 1.7
+        extras: Optional[:class:`dict`]
+            A mapping of kwargs to values to be passed to your
+            cog's ``__init__`` method as key word arguments.
+
+            .. versionadded:: 2.0.0
 
         Raises
         --------
@@ -723,6 +755,9 @@ class BotBase(GroupMixin):
             The extension does not have a setup function.
         ExtensionFailed
             The extension or its setup function had an execution error.
+        InvalidSetupArguments
+            ``load_extension`` was given ``extras`` but the ``setup``
+            function did not take any additional arguments.
         """
 
         name = self._resolve_name(name, package)
@@ -733,7 +768,7 @@ class BotBase(GroupMixin):
         if spec is None:
             raise errors.ExtensionNotFound(name)
 
-        self._load_from_module_spec(spec, name)
+        self._load_from_module_spec(spec, name, extras=extras)
 
     def unload_extension(self, name: str, *, package: Optional[str] = None) -> None:
         """Unloads an extension.

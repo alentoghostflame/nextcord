@@ -709,7 +709,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     This requires :attr:`Intents.guilds` to be enabled.
 
     :param channel: The guild channel that had its pins updated.
-    :type channel: Union[:class:`abc.GuildChannel`, :class:`Thread`]
+    :type channel: Union[:class:`~TextChannel`, :class:`Thread`]
     :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
     :type last_pin: Optional[:class:`datetime.datetime`]
 
@@ -838,7 +838,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     This requires :attr:`Intents.webhooks` to be enabled.
 
     :param channel: The channel that had its webhooks updated.
-    :type channel: :class:`abc.GuildChannel`
+    :type channel: :class:`TextChannel`
 
 .. function:: on_member_join(member)
               on_member_remove(member)
@@ -4244,6 +4244,7 @@ Exception Hierarchy
         - :exc:`DiscordException`
             - :exc:`InvalidCommandType`
             - :exc:`ClientException`
+                - :exc:`InvaildCommandType`
                 - :exc:`InvalidData`
                 - :exc:`InvalidArgument`
                 - :exc:`LoginFailure`

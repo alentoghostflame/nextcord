@@ -28,6 +28,7 @@ Is this your first time using the library? This is the place to get started!
 
 - **First steps:** :doc:`intro` | :doc:`quickstart` | :doc:`logging`
 - **Working with Nextcord:** :doc:`discord` | :doc:`intents`
+- **Migrating from discord.py**: :ref:`Migrating to nextcord <migrating>`
 - **Examples:** Many examples are available in the :resource:`repository <examples>`.
 - **Interaction Commands:** Interaction Tutorial :doc:`interactions` Migrating: :doc:`migrating_to_slash_commands`
 
