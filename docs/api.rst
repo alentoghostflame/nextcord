@@ -4242,6 +4242,7 @@ Exception Hierarchy
 
     - :exc:`Exception`
         - :exc:`DiscordException`
+            - :exc:`InvalidCommandType`
             - :exc:`ClientException`
                 - :exc:`InvalidData`
                 - :exc:`InvalidArgument`
