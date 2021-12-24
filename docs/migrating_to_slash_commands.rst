@@ -8,7 +8,7 @@ Migrating To Slash Commands
 
 Differences
 -------------
-One of the biggest difference's is the deprevation of CTX(Context) in the use of interaction 
+One of the biggest difference's is the use of :class:`~nextcord.Interaction` instead of :class:`~nextcord.ext.commands.Context`
 
 **NOTE:** It may take up to an hour for a slash command to register globally so we recommend you put guild_ids[] to limit the amount of guilds for testing 
 
