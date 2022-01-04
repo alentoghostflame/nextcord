@@ -1904,14 +1904,16 @@ class Client:
 
     async def on_guild_available(self, guild: Guild) -> None:
         try:
-            if (await guild.rollout_application_commands(
+            if self._rollout_all_guilds or self._connection.get_guild_application_commands(guild.id, rollout=True):
+                _log.info(f"nextcord.Client: Rolling out commands to guild {guild.name}|{guild.id}")
+                await guild.rollout_application_commands(
                     associate_known=self._rollout_associate_known,
                     delete_unknown=self._rollout_delete_unknown,
                     update_known=self._rollout_update_known
-            )):
-                pass
+                )
             else:
-                _log.info(f"No locally added commands explicitly registered for {guild.name}|{guild.id}, not checking.")
+                _log.info(f"nextcord.Client: No locally added commands explicitly registered for "
+                          f"{guild.name}|{guild.id}, not checking.")
         except Forbidden as e:
             _log.warning(f"nextcord.Client: Forbidden error for {guild.name}|{guild.id}, is the commands Oauth scope "
                          f"enabled? {e}")
