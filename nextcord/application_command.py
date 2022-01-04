@@ -339,10 +339,11 @@ class CommandOption(SlashOption):
             ret["required"] = True
 
         if self.choices:
+            # Discord returns the names as strings, might as well do it here so payload comparison is easy.
             if isinstance(self.choices, dict):
-                ret["choices"] = [{"name": key, "value": value} for key, value in self.choices.items()]
+                ret["choices"] = [{"name": str(key), "value": value} for key, value in self.choices.items()]
             else:
-                ret["choices"] = [{"name": value, "value": value} for value in self.choices]
+                ret["choices"] = [{"name": str(value), "value": value} for value in self.choices]
         if self.channel_types:
             # noinspection PyUnresolvedReferences
             ret["channel_types"] = [channel_type.value for channel_type in self.channel_types]
@@ -495,7 +496,8 @@ class ApplicationSubcommand:
         self.verify_content()
         ret = {
             "type": self.type.value,
-            "name": self.name,
+            # Might as well stringify the name, will come in handy if people try using numbers
+            "name": str(self.name),
             "description": self.description,
         }
         if self.children:
@@ -1017,6 +1019,7 @@ class ApplicationCommand(ApplicationSubcommand):
                     # payloads from Discord. If that were to change, switch from a recursive setup and manually
                     # check_dictionary_values.
                     if not deep_dictionary_check(cmd_option, raw_option):
+                        print(f"Failed deep dictionary check\n {cmd_option}\n\n{raw_option}\n")
                         return False
             if not found_correct_value:
                 return False
