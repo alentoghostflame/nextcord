@@ -428,6 +428,12 @@ class ApplicationSubcommand:
         self._callback = callback
         return self
 
+    @property
+    def self_argument(self) -> Optional:
+        """Returns the argument used for ``self``. Optional is used because :class:`ClientCog` isn't strictly correct.
+        """
+        return self._self_argument
+
     def set_self_argument(self, self_arg: ClientCog) -> ApplicationSubcommand:
         """Sets the `self` argument, used when the callback is inside a class."""
         self._self_argument = self_arg
