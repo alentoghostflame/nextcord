@@ -333,7 +333,7 @@ class CommandOption(SlashOption):
         elif self.required is False:
             pass  # Discord doesn't currently provide Required if it's False due to it being default.
         elif self.required is MISSING and self.default:
-            pass  # If required isn't explicitly set and a default exists, don't say that this command is required.
+            pass  # If required isn't explicitly set and a default exists, don't say that this param is required.
         else:
             # While this violates Discord's default and our goal (not specified should return minimum or nothing), a
             # parameter being optional by default goes against traditional programming. A parameter not explicitly

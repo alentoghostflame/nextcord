@@ -1805,6 +1805,25 @@ class Client:
     def get_application_command(self, command_id: int) -> Optional[ApplicationCommand]:
         return self._connection.get_application_command(command_id)
 
+    def get_all_application_commands(self) -> Set[ApplicationCommand]:
+        """Returns a copied set of all added :class:`ApplicationCommand` objects."""
+        return self._connection.application_commands
+
+    def get_application_commands(self, rollout: bool = False) -> List[ApplicationCommand]:
+        """Gets registered global commands.
+
+        Parameters
+        ----------
+        rollout: :class:`bool`
+            Whether unregistered/unassociated commands should be returned as well. Defaults to ``False``
+
+        Returns
+        -------
+        List[:class:`ApplicationCommand`]
+            List of :class:`ApplicationCommand` objects that are global.
+        """
+        return self._connection.get_global_application_commands(rollout=rollout)
+
     def add_application_command(
             self,
             command: ApplicationCommand,
