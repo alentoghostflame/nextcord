@@ -330,8 +330,10 @@ class CommandOption(SlashOption):
         # when possible minimizes the payload size and makes checks between registered and found commands easier.
         if self.required:
             ret["required"] = self.required
-        if self.required is not MISSING:
+        elif self.required is False:
             pass  # Discord doesn't currently provide Required if it's False due to it being default.
+        elif self.required is MISSING and self.default:
+            pass  # If required isn't explicitly set and a default exists, don't say that this command is required.
         else:
             # While this violates Discord's default and our goal (not specified should return minimum or nothing), a
             # parameter being optional by default goes against traditional programming. A parameter not explicitly
@@ -1019,7 +1021,6 @@ class ApplicationCommand(ApplicationSubcommand):
                     # payloads from Discord. If that were to change, switch from a recursive setup and manually
                     # check_dictionary_values.
                     if not deep_dictionary_check(cmd_option, raw_option):
-                        print(f"Failed deep dictionary check\n {cmd_option}\n\n{raw_option}\n")
                         return False
             if not found_correct_value:
                 return False
