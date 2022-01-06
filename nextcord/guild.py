@@ -3169,6 +3169,19 @@ class Guild(Hashable):
         data = await self._state.http.create_event(self.id, reason=reason, **payload)
         return self._store_scheduled_event(data)
 
+    def get_application_commands(self, rollout: bool = False):
+        """Gets all application commands registered for this guild.
+
+        Parameters
+        ----------
+        rollout: :class:`bool`
+
+        Returns
+        -------
+
+        """
+        return self._state.get_guild_application_commands(guild_id=self.id, rollout=rollout)
+
     def add_application_command(
             self,
             app_cmd: ApplicationCommand,
