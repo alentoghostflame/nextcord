@@ -416,6 +416,10 @@ class ApplicationSubcommand:
         else:
             return self._description
 
+    @description.setter
+    def description(self, new_desc: str):
+        self._description = new_desc
+
     @property
     def callback(self) -> Optional[Callable]:
         """Returns the callback associated with this ApplicationCommand."""
@@ -570,7 +574,10 @@ class ApplicationSubcommand:
             for option in uncalled_options.values():
                 if option.functional_name in autocomplete_kwargs:
                     kwargs[option.functional_name] = option.default
-            await self.invoke_autocomplete(interaction, focused_option, focused_option_value, **kwargs)
+            value = await self.invoke_autocomplete(interaction, focused_option, focused_option_value, **kwargs)
+            # Handles when the autocomplete callback returns something and didn't run the autocomplete function.
+            if value and not interaction.response.is_done():
+                await interaction.response.send_autocomplete(value)
         else:
             raise TypeError(f"{self.error_name} Autocomplete is not handled by this type of command.")
 
@@ -580,7 +587,7 @@ class ApplicationSubcommand:
             focused_option: CommandOption,
             focused_option_value: Any,
             **kwargs
-    ) -> None:
+    ) -> Any:
         """|coro|
         Invokes the autocomplete callback of the given option.
 
@@ -599,9 +606,11 @@ class ApplicationSubcommand:
             Keyword arguments to forward to the autocomplete callback.
         """
         if self._self_argument:
-            await focused_option.autocomplete_function(self._self_argument, interaction, focused_option_value, **kwargs)
+            return await focused_option.autocomplete_function(
+                self._self_argument, interaction, focused_option_value, **kwargs
+            )
         else:
-            await focused_option.autocomplete_function(interaction, focused_option_value, **kwargs)
+            return await focused_option.autocomplete_function(interaction, focused_option_value, **kwargs)
 
     async def call(self, state: ConnectionState, interaction: Interaction, option_data: List[Dict[str, Any]]) -> None:
         """|coro|
