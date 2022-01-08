@@ -304,11 +304,11 @@ class CommandOption(SlashOption):
             return state._get_message(int(argument))
         return argument
 
-    async def handle_message_argument(self, *args: List[Any]):
+    async def handle_message_argument(self, state: ConnectionState, argument: Any, interaction: Interaction):
         """For possible future use, will handle arguments specific to Message Commands (Context Menu type.)"""
         raise NotImplementedError  # TODO: Even worth doing? We pass in what we know already.
 
-    async def handle_user_argument(self, *args: List[Any]):
+    async def handle_user_argument(self, state: ConnectionState, argument: Any, interaction: Interaction):
         """For possible future use, will handle arguments specific to User Commands (Context Menu type.)"""
         raise NotImplementedError  # TODO: Even worth doing? We pass in what we know already.
 
@@ -965,9 +965,13 @@ class ApplicationCommand(ApplicationSubcommand):
         #  It's not that I'm unhappy adding things to the cache, it's having to manually do it like this.
         # The interaction gives us message data, might as well use it and add it to the cache.
         channel, guild = self._state._get_guild_channel(message_data)
+
         message = Message(channel=channel, data=message_data, state=self._state)
-        if not self._state._get_message(message.id) and self._state._messages is not None:
-            self._state._messages.append(message)
+        if cached_message := self._state._get_message(message.id):
+            return cached_message
+        else:
+            if self._state._messages is not None:
+                self._state._messages.append(message)
         return message
 
     def _handle_resolved_user(self, user_data: dict) -> User:
@@ -1127,12 +1131,12 @@ class ApplicationCommand(ApplicationSubcommand):
 
     async def call_autocomplete_from_interaction(self, interaction: Interaction):
         if not self._state:
-            raise NotImplementedError("State hasn't been set yet, this isn't handled yet!")
+            raise NotImplementedError("State hasn't been set, this isn't handled yet!")
         await self.call_autocomplete(self._state, interaction, interaction.data.get("options", {}))
 
     async def call_from_interaction(self, interaction: Interaction) -> None:
         if not self._state:
-            raise NotImplementedError("State hasn't been set yet, this isn't handled yet!")
+            raise NotImplementedError("State hasn't been set, this isn't handled yet!")
         await self.call(self._state, interaction, interaction.data.get("options", {}))
 
     async def call(self, state: ConnectionState, interaction: Interaction, option_data: List[Dict[str, Any]]) -> None:
