@@ -1900,14 +1900,6 @@ class Client:
                     ret[guild_id].add(command)
         return ret
 
-    async def register_bulk_application_commands(self) -> None:
-        # TODO: Using Bulk upsert seems to delete all commands
-        # It might be good to keep this around as a reminder for future work. Bulk upsert seem to delete everything
-        # that isn't part of that bulk upsert, for both global and guild commands. While useful, this will
-        # update/overwrite existing commands, which may (needs testing) wipe out all permissions associated with those
-        # commands. Look for an opportunity to use bulk upsert.
-        raise NotImplementedError
-
     async def on_connect(self) -> None:
         self.add_startup_application_commands()
         await self.rollout_application_commands()
