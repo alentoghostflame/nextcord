@@ -692,7 +692,7 @@ class ApplicationSubcommand:
         return self
 
     @property
-    def self_argument(self) -> Optional:
+    def self_argument(self) -> Optional[Any]:
         """Returns the argument used for ``self``. Optional is used because :class:`ClientCog` isn't strictly correct."""
         return self._self_argument
 
