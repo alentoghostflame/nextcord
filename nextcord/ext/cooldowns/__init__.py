@@ -22,3 +22,4 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .cooldowns import *
+from .core import *
