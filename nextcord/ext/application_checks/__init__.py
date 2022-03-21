@@ -25,3 +25,4 @@ DEALINGS IN THE SOFTWARE.
 
 from .core import *
 from .errors import *
+from .cooldowns import *
