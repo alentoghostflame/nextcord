@@ -821,7 +821,7 @@ def bot_has_guild_permissions(**perms: bool) -> Callable[[T], T]:
 
     return check(predicate)
 
-def cooldown(rate: int = MISSING, per: float = MISSING, type: Union[ApplicationBucketType, Callable[[Interaction], Any]] = ApplicationBucketType.default) -> Callable[[T], T]
+def cooldown(rate: int = MISSING, per: float = MISSING, type: Union[ApplicationBucketType, Callable[[Interaction], Any]] = ApplicationBucketType.default) -> Callable[[T], T]:
     def decorator(func: Union[ApplicationChecksCommand, "CoroFunc"]) -> Union[ApplicationChecksCommand, "CoroFunc"]:
         if isinstance(func, ApplicationChecksCommand):
             func._buckets = ApplicationCooldownMapping(ApplicationCooldown(rate, per), type)
