@@ -31,7 +31,7 @@ import asyncio
 from collections import deque
 
 from nextcord.abc import PrivateChannel
-from nextcord.ext.application_checks.errors import ApplicationMaxConcurrencyReached
+from .errors import ApplicationMaxConcurrencyReached
 
 if TYPE_CHECKING:
     from nextcord import Interaction
