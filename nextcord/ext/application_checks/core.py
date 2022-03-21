@@ -27,7 +27,8 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import Callable, Union, TypeVar, TYPE_CHECKING
+from typing import Optional, Type, Any, TYPE_CHECKING, TypeVar, Union, Callable
+from typing_extensions import Concatenate, ParamSpec
 
 import nextcord
 from nextcord.application_command import ApplicationSubcommand, Interaction, AppCmdCallbackWrapper, BaseApplicationCommand, BaseApplicationSubcommand
@@ -45,11 +46,23 @@ from .errors import (
     ApplicationNotOwner,
     ApplicationNSFWChannelRequired,
     ApplicationCheckForBotOnly,
+    ApplicationCommandOnCooldown,
+    ApplicationMaxConcurrencyReached,
 )
-
-if TYPE_CHECKING:
-    from nextcord.types.checks import ApplicationCheck, CoroFunc
-
+from .cooldowns import (
+    ApplicationBucketType,
+    ApplicationCooldown, 
+    ApplicationCooldownMapping, 
+    ApplicationDynamicCooldownMapping, 
+    ApplicationMaxConcurrency,
+)
+from nextcord.ext.commands import Cog
+from nextcord.utils import MISSING, maybe_coroutine
+try:
+    from nextcord.ext.commands._types import _BaseCommand
+except:
+    class _BaseCommand:
+        __slots__ = ()
 
 __all__ = (
     "check",
@@ -62,6 +75,9 @@ __all__ = (
     "bot_has_permissions",
     "has_guild_permissions",
     "bot_has_guild_permissions",
+    "cooldown",
+    "dynamic_cooldown",
+    "max_concurrency",
     "dm_only",
     "guild_only",
     "is_owner",
@@ -70,8 +86,249 @@ __all__ = (
     "application_command_after_invoke",
 )
 
-T = TypeVar("T")
+T = TypeVar('T')
+CogT = TypeVar('CogT', bound='Cog')
+ApplicationCommandT = TypeVar('ApplicationCommandT', bound='ApplicationCooldowns')
+InteractionT = TypeVar('InteractionT', bound='Interaction')
 
+if TYPE_CHECKING:
+    from nextcord.types.checks import ApplicationCheck, CoroFunc
+    P = ParamSpec('P')
+else:
+    P = TypeVar('P')
+
+class ApplicationChecksCommand(ApplicationSubcommand, _BaseCommand, Generic[Callable[[CogT], CogT], P, T]):
+    def __new__(cls: Type[ApplicationCommandT], *args: Any, **kwargs: Any) -> ApplicationCommandT:
+        # if you're wondering why this is done, it's because we need to ensure
+        # we have a complete original copy of **kwargs even for classes that
+        # mess with it by popping before delegating to the subclass __init__.
+        # In order to do this, we need to control the instance creation and
+        # inject the original kwargs through __new__ rather than doing it
+        # inside __init__.
+        self = super().__new__(cls)
+
+        # we do a shallow copy because it's probably the most common use case.
+        # this could potentially break if someone modifies a list or something
+        # while it's in movement, but for now this is the cheapest and
+        # fastest way to do what we want.
+        self.__original_kwargs__ = kwargs.copy()
+        return self
+
+    def __init__(self, func: Union[
+            Callable[Concatenate[CogT, InteractionT, P], Coro[T]],
+            Callable[Concatenate[InteractionT, P], Coro[T]],
+        ], **kwargs: Any):
+        if not asyncio.iscoroutinefunction(func):
+            raise TypeError('Callback must be a coroutine.')
+
+        try:
+            cooldown = func.__slash_commands_cooldown__
+        except AttributeError:
+            cooldown = kwargs.get('cooldown')
+        
+        if cooldown is None:
+            buckets = ApplicationCooldownMapping(cooldown, ApplicationBucketType.default)
+        elif isinstance(cooldown, ApplicationCooldownMapping):
+            buckets = cooldown
+        else:
+            raise TypeError("ApplicationCooldown must be a an instance of ApplicationCooldownMapping or None.")
+        self._buckets: ApplicationCooldownMapping = buckets
+
+        try:
+            max_concurrency = func.__slash_commands_max_concurrency__
+        except AttributeError:
+            max_concurrency = kwargs.get('max_concurrency')
+
+        self._max_concurrency: Optional[ApplicationMaxConcurrency] = max_concurrency
+        self.cooldown_after_parsing: bool = kwargs.get('cooldown_after_parsing', False)
+        self.cog: Optional[CogT] = None
+
+        # bandaid for the fact that sometimes parent can be the bot instance
+        parent = kwargs.get('parent')
+        self.parent: Optional[GroupMixin] = parent if isinstance(parent, _BaseCommand) else None  # type: ignore
+            
+    async def __call__(self, interaction: Interaction, *args: P.args, **kwargs: P.kwargs) -> T:
+        """|coro|
+        Calls the internal callback that the command holds.
+        .. note::
+            This bypasses all mechanisms -- including checks, converters,
+            invoke hooks, cooldowns, etc. You must take care to pass
+            the proper arguments and types to this function.
+        .. versionadded:: 1.3
+        """
+        if self.cog is not None:
+            return await self.callback(self.cog, interaction, *args, **kwargs)  # type: ignore
+        else:
+            return await self.callback(interaction, *args, **kwargs)  # type: ignore
+
+    def _ensure_assignment_on_copy(self, other: ApplicationCommandT) -> ApplicationCommandT:
+        other._before_invoke = self._before_invoke
+        other._after_invoke = self._after_invoke
+        if self.checks != other.checks:
+            other.checks = self.checks.copy()
+        if self._buckets.valid and not other._buckets.valid:
+            other._buckets = self._buckets.copy()
+        if self._max_concurrency != other._max_concurrency:
+            # _max_concurrency won't be None at this point
+            other._max_concurrency = self._max_concurrency.copy()  # type: ignore
+
+        try:
+            other.on_error = self.on_error
+        except AttributeError:
+            pass
+        return other
+
+    def copy(self: ApplicationCommandT) -> ApplicationCommandT:
+        """Creates a copy of this command.
+        Returns
+        --------
+        :class:`ApplicationChecksCommand`
+            A new instance of this command.
+        """
+        ret = self.__class__(self.callback, **self.__original_kwargs__)
+        return self._ensure_assignment_on_copy(ret)
+
+    def _update_copy(self: ApplicationCommandT, kwargs: Dict[str, Any]) -> ApplicationCommandT:
+        if kwargs:
+            kw = kwargs.copy()
+            kw.update(self.__original_kwargs__)
+            copy = self.__class__(self.callback, **kw)
+            return self._ensure_assignment_on_copy(copy)
+        else:
+            return self.copy()
+
+    def _prepare_cooldowns(self, interaction: Interaction) -> None:
+        if self._buckets.valid:
+            dt = interaction.message.edited_at or interaction.message.created_at
+            current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
+            bucket = self._buckets.get_bucket(interaction.message, current)
+            if bucket is not None:
+                retry_after = bucket.update_rate_limit(current)
+                if retry_after:
+                    raise ApplicationCommandOnCooldown(bucket, retry_after, self._buckets.type)  # type: ignore
+
+    async def prepare(self, interaction: Interaction) -> None:
+        interaction.application_command = self
+
+        if not await self.can_run(interaction):
+            raise ApplicationCheckFailure(f'The check functions for command {self.qualified_name} failed.')
+
+        if self._max_concurrency is not None:
+            # For this application, context can be duck-typed as a Message
+            await self._max_concurrency.acquire(interaction)  # type: ignore
+
+        try:
+            if self.cooldown_after_parsing:
+                await self._parse_arguments(interaction)
+                self._prepare_cooldowns(interaction)
+            else:
+                self._prepare_cooldowns(interaction)
+                await self._parse_arguments(interaction)
+
+            await self.call_before_hooks(interaction)
+        except:
+            if self._max_concurrency is not None:
+                await self._max_concurrency.release(interaction)  # type: ignore
+            raise
+
+    def is_on_cooldown(self, interaction: Interaction) -> bool:
+        """Checks whether the command is currently on cooldown.
+        Parameters
+        -----------
+        ctx: :class:`.Context`
+            The invocation context to use when checking the commands cooldown status.
+        Returns
+        --------
+        :class:`bool`
+            A boolean indicating if the command is on cooldown.
+        """
+        if not self._buckets.valid:
+            return False
+
+        bucket = self._buckets.get_bucket(interaction.message)
+        dt = interaction.message.edited_at or interaction.message.created_at
+        current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
+        return bucket.get_tokens(current) == 0
+
+    def reset_cooldown(self, interaction: Interaction) -> None:
+        """Resets the cooldown on this command.
+        Parameters
+        -----------
+        ctx: :class:`.Context`
+            The invocation context to reset the cooldown under.
+        """
+        if self._buckets.valid:
+            bucket = self._buckets.get_bucket(interaction.message)
+            bucket.reset()
+
+    def get_cooldown_retry_after(self, interaction: Interaction) -> float:
+        """Retrieves the amount of seconds before this command can be tried again.
+        .. versionadded:: 1.4
+        Parameters
+        -----------
+        ctx: :class:`.Context`
+            The invocation context to retrieve the cooldown from.
+        Returns
+        --------
+        :class:`float`
+            The amount of time left on this command's cooldown in seconds.
+            If this is ``0.0`` then the command isn't on cooldown.
+        """
+        if self._buckets.valid:
+            bucket = self._buckets.get_bucket(interaction.message)
+            dt = interaction.message.edited_at or interaction.message.created_at
+            current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
+            return bucket.get_retry_after(current)
+
+        # If we're here, either the buckets is not valid or there's no cooldown to begin with.
+        return 0.0
+
+
+    async def can_run(self, interaction: Interaction) -> bool:
+        """|coro|
+        Checks if the command can be executed by checking all the predicates
+        inside the :attr:`~Command.checks` attribute. This also checks whether the
+        command is disabled.
+        .. versionchanged:: 1.3
+            Checks whether the command is disabled or not
+        Parameters
+        -----------
+        ctx: :class:`.Context`
+            The ctx of the command currently being invoked.
+        Raises
+        -------
+        :class:`CommandError`
+            Any command error that was raised during a check call will be propagated
+            by this function.
+        Returns
+        --------
+        :class:`bool`
+            A boolean indicating if the command can be invoked.
+        """
+
+        original = interaction.application_command
+        interaction.application_command = self
+
+        try:
+            if not await self.application_command_can_run(interaction):
+                raise ApplicationCheckFailure(f'The global check functions for command {self.qualified_name} failed.')
+
+            cog = self.cog
+            if cog is not None:
+                local_check = Cog._get_overridden_method(cog.cog_check)
+                if local_check is not None:
+                    ret = await maybe_coroutine(local_check, interaction)
+                    if not ret:
+                        return False
+
+            predicates = self.checks
+            if not predicates:
+                # since we have no checks, then we just return True.
+                return True
+
+            return await nextcord.utils.async_all(predicate(interaction) for predicate in predicates)  # type: ignore
+        finally:
+            interaction.application_command = original
 
 class CheckWrapper(AppCmdCallbackWrapper):
     def __init__(self, callback: Union[Callable, AppCmdCallbackWrapper], predicate):
@@ -260,7 +517,7 @@ def check_any(*checks: "ApplicationCheck") -> Callable[[T], T]:
             pred = wrapped.predicate
         except AttributeError:
             raise TypeError(
-                f"{wrapped!r} must be wrapped by checks.check decorator"
+                f"{wrapped!r} must be wrapped by application_checks.check decorator"
             ) from None
         else:
             unwrapped.append(pred)
@@ -564,6 +821,81 @@ def bot_has_guild_permissions(**perms: bool) -> Callable[[T], T]:
 
     return check(predicate)
 
+def cooldown(rate: int = MISSING, per: float = MISSING, type: Union[ApplicationBucketType, Callable[[Interaction], Any]] = ApplicationBucketType.default) -> Callable[[T], T]
+    def decorator(func: Union[ApplicationChecksCommand, "CoroFunc"]) -> Union[ApplicationChecksCommand, "CoroFunc"]:
+        if isinstance(func, ApplicationChecksCommand):
+            func._buckets = ApplicationCooldownMapping(ApplicationCooldown(rate, per), type)
+        else:
+            if not hasattr(func, "__slash_commands_cooldown__"):
+                func.__slash_commands_cooldown__ = []
+                
+            func.__slash_commands_cooldown__ = ApplicationCooldownMapping(ApplicationCooldown(rate, per), type)
+        return func
+    return decorator
+
+def dynamic_cooldown(cooldown: Union[ApplicationBucketType, Callable[[Interaction], Any]], type: ApplicationBucketType = ApplicationBucketType.default) -> Callable[[T], T]:
+    """A decorator that adds a dynamic cooldown to a :class:`.Command`
+    This differs from :func:`.cooldown` in that it takes a function that
+    accepts a single parameter of type :class:`.nextcord.Message` and must
+    return a :class:`.Cooldown` or ``None``. If ``None`` is returned then
+    that cooldown is effectively bypassed.
+    A cooldown allows a command to only be used a specific amount
+    of times in a specific time frame. These cooldowns can be based
+    either on a per-guild, per-channel, per-user, per-role or global basis.
+    Denoted by the third argument of ``type`` which must be of enum
+    type :class:`.BucketType`.
+    If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
+    :func:`.on_command_error` and the local error handler.
+    A command can only have a single cooldown.
+    .. versionadded:: 2.0
+    Parameters
+    ------------
+    cooldown: Callable[[:class:`.nextcord.Message`], Optional[:class:`.Cooldown`]]
+        A function that takes a message and returns a cooldown that will
+        apply to this invocation or ``None`` if the cooldown should be bypassed.
+    type: :class:`.BucketType`
+        The type of cooldown to have.
+    """
+    if not callable(cooldown):
+        raise TypeError("A callable must be provided")
+
+    def decorator(func: Union[ApplicationChecksCommand, "CoroFunc"]) -> Union[ApplicationChecksCommand, "CoroFunc"]:
+        if isinstance(func, ApplicationChecksCommand):
+            func._buckets = ApplicationDynamicCooldownMapping(cooldown, type)
+        else:
+            func.__slash_commands_cooldown__ = ApplicationDynamicCooldownMapping(cooldown, type)
+        return func
+    return decorator  # type: ignore
+
+def max_concurrency(number: int, per: ApplicationBucketType = ApplicationBucketType.default, *, wait: bool = False) -> Callable[[T], T]:
+    """A decorator that adds a maximum concurrency to a :class:`.Command` or its subclasses.
+    This enables you to only allow a certain number of command invocations at the same time,
+    for example if a command takes too long or if only one user can use it at a time. This
+    differs from a cooldown in that there is no set waiting period or token bucket -- only
+    a set number of people can run the command.
+    .. versionadded:: 1.3
+    Parameters
+    -------------
+    number: :class:`int`
+        The maximum number of invocations of this command that can be running at the same time.
+    per: :class:`.BucketType`
+        The bucket that this concurrency is based on, e.g. ``BucketType.guild`` would allow
+        it to be used up to ``number`` times per guild.
+    wait: :class:`bool`
+        Whether the command should wait for the queue to be over. If this is set to ``False``
+        then instead of waiting until the command can run again, the command raises
+        :exc:`.MaxConcurrencyReached` to its error handler. If this is set to ``True``
+        then the command waits until it can be executed.
+    """
+
+    def decorator(func: Union[ApplicationChecksCommand, "CoroFunc"]) -> Union[ApplicationChecksCommand, "CoroFunc"]:
+        value = ApplicationMaxConcurrency(number, per=per, wait=wait)
+        if isinstance(func, ApplicationChecksCommand):
+            func._max_concurrency = value
+        else:
+            func.__slash_commands_max_concurrency__ = value
+        return func
+    return decorator  # type: ignore
 
 def dm_only() -> Callable[[T], T]:
     """A :func:`.check` that indicates this command must only be used in a
