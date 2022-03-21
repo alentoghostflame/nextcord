@@ -21,7 +21,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from nextcord.errors import ApplicationCheckFailure
+from nextcord.errors import ApplicationCheckFailure, ApplicationError
 from nextcord.interactions import Interaction
 from typing import (
     Any,
@@ -35,6 +35,7 @@ from typing import (
 from nextcord.types.snowflake import Snowflake, SnowflakeList
 from nextcord.abc import GuildChannel
 from nextcord.threads import Thread
+from .cooldowns import ApplicationCooldown, ApplicationBucketType
 
 __all__ = (
     "ApplicationCheckAnyFailure",
@@ -49,6 +50,8 @@ __all__ = (
     "ApplicationNotOwner",
     "ApplicationNSFWChannelRequired",
     "ApplicationCheckForBotOnly",
+    "ApplicationMaxConcurrencyReached",
+    "ApplicationCommandOnCooldown"
 )
 
 
@@ -289,3 +292,42 @@ class ApplicationCheckForBotOnly(ApplicationCheckFailure):
         super().__init__(
             "This application check can only be used for ext.commands.Bot."
         )
+        
+class ApplicationCommandOnCooldown(ApplicationError):
+    """Exception raised when the command being invoked is on cooldown.
+    This inherits from :exc:`ApplicationError`
+    Attributes
+    -----------
+    cooldown: :class:`.ApplicationCooldown`
+        A class with attributes ``rate`` and ``per`` similar to the
+        :func:`.cooldown` decorator.
+    type: :class:`ApplicationBucketType`
+        The type associated with the cooldown.
+    retry_after: :class:`float`
+        The amount of seconds to wait before you can retry again.
+    """
+    def __init__(self, cooldown: ApplicationCooldown, retry_after: float, type: ApplicationBucketType) -> None:
+        self.cooldown: ApplicationCooldown = cooldown
+        self.retry_after: float = retry_after
+        self.type: ApplicationBucketType = type
+        super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
+
+class ApplicationMaxConcurrencyReached(ApplicationError):
+    """Exception raised when the command being invoked has reached its maximum concurrency.
+    This inherits from :exc:`ApplicationError`.
+    Attributes
+    ------------
+    number: :class:`int`
+        The maximum number of concurrent invokers allowed.
+    per: :class:`.ApplicationBucketType`
+        The bucket type passed to the :func:`.max_concurrency` decorator.
+    """
+
+    def __init__(self, number: int, per: ApplicationBucketType) -> None:
+        self.number: int = number
+        self.per: BucketType = per
+        name = per.name
+        suffix = 'per %s' % name if per.name != 'default' else 'globally'
+        plural = '%s times %s' if number > 1 else '%s time %s'
+        fmt = plural % (number, suffix)
+        super().__init__(f'Too many people are using this command. It can only be used {fmt} concurrently.')
