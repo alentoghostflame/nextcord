@@ -138,7 +138,7 @@ if TYPE_CHECKING:
 else:
     P = TypeVar('P')
 
-class ApplicationChecksCommand(ApplicationSubcommand, _BaseCommand, Generic[Callable[[CogT], CogT], P, T]):
+class ApplicationChecksCommand(ApplicationSubcommand, _BaseCommand, Generic[CogT, P, T]):
     def __new__(cls: Type[ApplicationCommandT], *args: Any, **kwargs: Any) -> ApplicationCommandT:
         # if you're wondering why this is done, it's because we need to ensure
         # we have a complete original copy of **kwargs even for classes that
