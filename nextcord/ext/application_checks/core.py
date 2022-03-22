@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import Optional, Type, Any, TYPE_CHECKING, TypeVar, Union, Callable
+from typing import Optional, Generic, Type, Any, TYPE_CHECKING, TypeVar, Union, Callable
 from typing_extensions import Concatenate, ParamSpec
 
 import nextcord
