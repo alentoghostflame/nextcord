@@ -32,23 +32,7 @@ from typing_extensions import Concatenate, ParamSpec
 
 import nextcord
 from nextcord.application_command import ApplicationSubcommand, Interaction, AppCmdCallbackWrapper, BaseApplicationCommand, BaseApplicationSubcommand
-from .errors import (
-    ApplicationCheckAnyFailure,
-    ApplicationCheckFailure,
-    ApplicationNoPrivateMessage,
-    ApplicationMissingRole,
-    ApplicationMissingAnyRole,
-    ApplicationBotMissingRole,
-    ApplicationBotMissingAnyRole,
-    ApplicationMissingPermissions,
-    ApplicationBotMissingPermissions,
-    ApplicationPrivateMessageOnly,
-    ApplicationNotOwner,
-    ApplicationNSFWChannelRequired,
-    ApplicationCheckForBotOnly,
-    ApplicationCommandOnCooldown,
-    ApplicationMaxConcurrencyReached,
-)
+
 from .cooldowns import (
     ApplicationBucketType,
     ApplicationCooldown, 
@@ -58,6 +42,63 @@ from .cooldowns import (
 )
 from nextcord.ext.commands import Cog
 from nextcord.utils import MISSING, maybe_coroutine
+try:
+    from .errors import (
+        ApplicationCheckAnyFailure,
+        ApplicationCheckFailure,
+        ApplicationNoPrivateMessage,
+        ApplicationMissingRole,
+        ApplicationMissingAnyRole,
+        ApplicationBotMissingRole,
+        ApplicationBotMissingAnyRole,
+        ApplicationMissingPermissions,
+        ApplicationBotMissingPermissions,
+        ApplicationPrivateMessageOnly,
+        ApplicationNotOwner,
+        ApplicationNSFWChannelRequired,
+        ApplicationCheckForBotOnly,
+        ApplicationCommandOnCooldown,
+        ApplicationMaxConcurrencyReached,
+    )
+except ImportError:
+    from .errors import (
+        ApplicationCheckAnyFailure,
+        ApplicationCheckFailure,
+        ApplicationNoPrivateMessage,
+        ApplicationMissingRole,
+        ApplicationMissingAnyRole,
+        ApplicationBotMissingRole,
+        ApplicationBotMissingAnyRole,
+        ApplicationMissingPermissions,
+        ApplicationBotMissingPermissions,
+        ApplicationPrivateMessageOnly,
+        ApplicationNotOwner,
+        ApplicationNSFWChannelRequired,
+        ApplicationCheckForBotOnly,
+        ApplicationCommandOnCooldown,
+    )
+    from nextcord.errors import ApplicationError
+    class ApplicationMaxConcurrencyReached(ApplicationError):
+        """Exception raised when the command being invoked has reached its maximum concurrency.
+        This inherits from :exc:`ApplicationError`.
+        Attributes
+        ------------
+        number: :class:`int`
+            The maximum number of concurrent invokers allowed.
+        per: :class:`.ApplicationBucketType`
+            The bucket type passed to the :func:`.max_concurrency` decorator.
+        """
+        def __init__(self, number: int, per: ApplicationBucketType) -> None:
+            self.number: int = number
+            self.per: ApplicationBucketType = per
+            name = per.name
+            suffix = 'per %s' % name if per.name != 'default' else 'globally'
+            plural = '%s times %s' if number > 1 else '%s time %s'
+            fmt = plural % (number, suffix)
+            super().__init__(f'Too many people are using this command. It can only be used {fmt} concurrently.')
+
+except:
+    raise
 try:
     from nextcord.ext.commands._types import _BaseCommand
 except:
