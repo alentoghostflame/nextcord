@@ -27,7 +27,7 @@ from __future__ import annotations
 
 from . import Role, User
 from .abc import GuildChannel
-from .application_command import AppCmdCallbackWrapper, BaseApplicationCommand
+from .application_command import BaseApplicationCommand, AppCmdCallbackWrapper
 from .errors import ApplicationCheckFailure
 from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Type, TypeVar, Optional, Union
 from .flags import BaseFlags, flag_value, fill_with_flags, alias_flag_value
@@ -866,7 +866,7 @@ def guild_permissions(guild_id: int, perms: list[CommandPermission]):
             if guild_id in app_cmd.guild_ids:
                 app_cmd.permissions.update({guild_id:perms})
             else:
-                raise ApplicationCheckFailure(f'Missing guild: {guild_id}')
+                raise ApplicationCheckFailure(f'Missing guild in guild_ids: {guild_id}')
             
     def wrapper(func):
         return PermissionWrapper(func)
