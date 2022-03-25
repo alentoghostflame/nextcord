@@ -1048,7 +1048,11 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
             cmd_type: ApplicationCommandType = MISSING,
             guild_ids: Iterable[int] = MISSING,
             parent_cog: Optional[ClientCog] = None,
-            force_global: bool = False
+            force_global: bool = False,
+            default_member_permissions: Permissions = None,
+            dm_permission: bool = True,
+            permissions: dict[int, CommandPermission] = None,
+            #// nsfw: bool = False
     ):
         AppCmdWrapperMixin.__init__(self, callback)
         CallbackMixin.__init__(self, callback=callback, parent_cog=parent_cog)
@@ -1058,6 +1062,10 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
         self._description: str = description
         self.guild_ids_to_rollout: Set[int] = set(guild_ids) if guild_ids else set()
         self.force_global: bool = force_global
+        self.default_member_permissions = default_member_permissions
+        self.dm_permission = dm_permission
+        self.permissions = permissions if permissions else {}
+        #// self.nsfw = nsfw
 
         self.command_ids: Dict[Optional[int], int] = {}  # {Guild ID (None for global): command ID}
         self.options: Dict[str, SlashOption] = {}
@@ -1140,7 +1148,20 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
         }
         if guild_id:
             ret["guild_id"] = guild_id
+        if self.default_member_permissions:
+            ret["default_member_permissions"] = str(self.default_member_permissions.value)
+        if self.dm_permission:
+            ret["dm_permission"] = self.dm_permission
+        # TODO: add age-gated commands when documented
+        #// if self.nsfw:
+        #//     ret[...] = self.nsfw 
         return ret
+    
+    def get_permissions_payload(self, guild_id: int) -> dict:
+        perms = []
+        for perm in self.permissions.get(guild_id):
+            perms.append(perm.payload)
+        return {'permissions': perms}
 
     def get_guild_payload(self, guild_id: int):
         warnings.warn(".get_guild_payload is deprecated, use .get_payload(guild_id) instead.", stacklevel=2, category=FutureWarning)
