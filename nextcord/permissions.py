@@ -779,40 +779,6 @@ class PermissionOverwrite:
         for key in self.PURE_FLAGS:
             yield key, self._values.get(key)
 
-class CommandPermission():
-    
-    def __init__(
-        self, *,
-        target: Optional[Union[int, Role, User, GuildChannel]], 
-        permission: bool, 
-        target_type: Optional[Union[int, Role, User, GuildChannel]] = None
-    ) -> None:
-        
-        if not isinstance(target, int):
-            self.target = target.id
-        
-        self.permission = permission
-        
-        if not target_type:
-            if isinstance(target, int):
-                raise ValueError(target, target_type)
-            target_type = target
-            
-        if isinstance(target_type, Role):
-            self.type = 1
-        elif isinstance(target_type, User):
-            self.type = 2
-        elif isinstance(target_type, GuildChannel) or target_type == GuildChannel:
-            self.type = 3
-        elif isinstance(target_type, int):
-            self.type = target_type
-        else:
-            raise ValueError(target_type)
-    
-    @property
-    def payload(self):
-        return {"id": str(self.target), "type": self.type, "permission": self.permission}
-
 def has_permissions(**perms):
     """Adds default permissions a member must have to run this command.
     
@@ -841,33 +807,16 @@ def guild_only():
         return DmPermissionWrapper(func)
     return wrapper
 
-def is_nsfw():
-    """Makes an application command age-gated. This sets `ApplicationCommand.nsfw` to `True`
+# def is_nsfw():
+#     """Makes an application command age-gated. This sets `ApplicationCommand.nsfw` to `True`
     
-    You can use this decorator only once."""
+#     You can use this decorator only once."""
     
-    class AgeGatedWrapper(AppCmdCallbackWrapper):
+#     class AgeGatedWrapper(AppCmdCallbackWrapper):
         
-        def modify(self, app_cmd: BaseApplicationCommand):
-            app_cmd.nsfw = True
+#         def modify(self, app_cmd: BaseApplicationCommand):
+#             app_cmd.nsfw = True
             
-    def wrapper(func):
-        return AgeGatedWrapper(func)
-    return wrapper
-
-def guild_permissions(guild_id: int, perms: list[CommandPermission]):
-    """Updates the application command permissions on a guild before registration. 
-    
-    Requires `applications.commands.permissions.update` scope."""
-    
-    class PermissionWrapper(AppCmdCallbackWrapper):
-        
-        def modify(self, app_cmd: BaseApplicationCommand):
-            if guild_id in app_cmd.guild_ids:
-                app_cmd.permissions.update({guild_id:perms})
-            else:
-                raise ApplicationCheckFailure(f'Missing guild in guild_ids: {guild_id}')
-            
-    def wrapper(func):
-        return PermissionWrapper(func)
-    return wrapper
+#     def wrapper(func):
+#         return AgeGatedWrapper(func)
+#     return wrapper

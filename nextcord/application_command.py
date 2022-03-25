@@ -1051,7 +1051,6 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
             force_global: bool = False,
             default_member_permissions: Optional[Permissions] = None,
             dm_permission: bool = True,
-            permissions: Optional[dict[int, CommandPermission]] = None,
             #// nsfw: bool = False
     ):
         AppCmdWrapperMixin.__init__(self, callback)
@@ -1064,7 +1063,6 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
         self.force_global: bool = force_global
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
-        self.permissions = permissions if permissions else {}
         #// self.nsfw = nsfw
 
         self.command_ids: Dict[Optional[int], int] = {}  # {Guild ID (None for global): command ID}
@@ -1156,12 +1154,6 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
         #// if self.nsfw:
         #//     ret[...] = self.nsfw 
         return ret
-    
-    def get_permissions_payload(self, guild_id: int) -> dict:
-        perms = []
-        for perm in self.permissions.get(guild_id):
-            perms.append(perm.payload)
-        return {'permissions': perms}
 
     def get_guild_payload(self, guild_id: int):
         warnings.warn(".get_guild_payload is deprecated, use .get_payload(guild_id) instead.", stacklevel=2, category=FutureWarning)
@@ -1405,15 +1397,13 @@ class SlashApplicationCommand(SlashCommandMixin, BaseApplicationCommand, Autocom
             force_global: bool = False,
             default_member_permissions: Optional[Permissions] = None,
             dm_permission: bool = True,
-            permissions: Optional[dict[int, CommandPermission]] = None,
     ):
         BaseApplicationCommand.__init__(self, name=name, description=description, callback=callback,
                                         cmd_type=ApplicationCommandType.chat_input, guild_ids=guild_ids,
                                         parent_cog=parent_cog,
                                         force_global=force_global,
                                         default_member_permissions=default_member_permissions,
-                                        dm_permission=dm_permission,
-                                        permissions=permissions)
+                                        dm_permission=dm_permission)
         AutocompleteCommandMixin.__init__(self, parent_cog=parent_cog)
         SlashCommandMixin.__init__(self, callback=callback, parent_cog=parent_cog)
         # self.children: Dict[str, SlashApplicationSubcommand] = {}
@@ -1488,13 +1478,12 @@ class UserApplicationCommand(BaseApplicationCommand):
             force_global: bool = False,
             default_member_permissions: Optional[Permissions] = None,
             dm_permission: bool = True,
-            permissions: Optional[dict[int, CommandPermission]] = None,
     ):
         super().__init__(name=name, description="", callback=callback,
                          cmd_type=ApplicationCommandType.user, guild_ids=guild_ids,
                          parent_cog=parent_cog, force_global=force_global,
                          default_member_permissions=default_member_permissions,
-                         dm_permission=dm_permission, permissions=permissions)
+                         dm_permission=dm_permission)
 
     async def call_from_interaction(self, interaction: Interaction):
         await self.call(self._state, interaction)
@@ -1520,13 +1509,12 @@ class MessageApplicationCommand(BaseApplicationCommand):
             force_global: bool = False,
             default_member_permissions: Optional[Permissions] = None,
             dm_permission: bool = True,
-            permissions: Optional[dict[int, CommandPermission]] = None,
     ):
         super().__init__(name=name, description="", callback=callback,
                          cmd_type=ApplicationCommandType.message, guild_ids=guild_ids,
                          parent_cog=parent_cog, force_global=force_global,
                          default_member_permissions=default_member_permissions,
-                         dm_permission=dm_permission, permissions=permissions)
+                         dm_permission=dm_permission)
 
     async def call_from_interaction(self, interaction: Interaction):
         await self.call(self._state, interaction)
@@ -3320,7 +3308,6 @@ def slash_command(
     force_global: bool = False,
     default_member_permissions: Optional[Permissions] = None,
     dm_permission: bool = True,
-    permissions: Optional[dict[int, CommandPermission]] = None,
 ):
     """Creates a Slash application command from the decorated function.
     Used inside :class:`ClientCog`'s or something that subclasses it.
@@ -3341,9 +3328,6 @@ def slash_command(
         Default permissions for members that do not have a specific permission set.
     dm_permission: :class:`bool`
         If ``False``, this command will not be available in DMs. Defaults to Discord's default.
-    permissions: :class:`dict`
-        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
-        :class:`Role`, :class:`Member` or :class:`Guild`.
     """
 
     def decorator(func: Callable) -> SlashApplicationCommand:
@@ -3363,7 +3347,6 @@ def slash_command(
             force_global=force_global,
             default_member_permissions=default_member_permissions,
             dm_permission=dm_permission,
-            permissions=permissions,
         )
         return app_cmd
 
@@ -3376,7 +3359,6 @@ def message_command(
     force_global: bool = False,
     default_member_permissions: Optional[Permissions] = None,
     dm_permission: bool = True,
-    permissions: Optional[dict[int, CommandPermission]] = None,
 ):
     """Creates a Message context command from the decorated function.
     Used inside :class:`ClientCog`'s or something that subclasses it.
@@ -3394,9 +3376,6 @@ def message_command(
         Default permissions for members that do not have a specific permission set.
     dm_permission: :class:`bool`
         If ``False``, this command will not be available in DMs. Defaults to Discord's default.
-    permissions: :class:`dict`
-        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
-        :class:`Role`, :class:`Member` or :class:`Guild`.
     """
 
     def decorator(func: Callable) -> MessageApplicationCommand:
@@ -3417,7 +3396,6 @@ def message_command(
             force_global=force_global,
             default_member_permissions=default_member_permissions,
             dm_permission=dm_permission,
-            permissions=permissions,
         )
         return app_cmd
 
@@ -3430,7 +3408,6 @@ def user_command(
     force_global: bool = False,
     default_member_permissions: Optional[Permissions] = None,
     dm_permission: bool = True,
-    permissions: Optional[dict[int, CommandPermission]] = None,
 ):
     """Creates a User context command from the decorated function.
     Used inside :class:`ClientCog`'s or something that subclasses it.
@@ -3447,9 +3424,6 @@ def user_command(
         Default permissions for members that do not have a specific permission set.
     dm_permission: :class:`bool`
         If ``False``, this command will not be available in DMs. Defaults to Discord's default.
-    permissions: :class:`dict`
-        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
-        :class:`Role`, :class:`Member` or :class:`Guild`.
     """
 
     def decorator(func: Callable) -> UserApplicationCommand:
@@ -3462,7 +3436,6 @@ def user_command(
             force_global=force_global,
             default_member_permissions=default_member_permissions,
             dm_permission=dm_permission,
-            permissions=permissions,
         )
         return app_cmd
 

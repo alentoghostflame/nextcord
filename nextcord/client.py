@@ -52,7 +52,7 @@ import aiohttp
 from . import utils
 from .activity import ActivityTypes, BaseActivity, create_activity
 from .appinfo import AppInfo
-from .application_command import message_command, slash_command, user_command
+from .application_command import BaseApplicationCommand, message_command, slash_command, user_command
 from .backoff import ExponentialBackoff
 from .channel import PartialMessageable, _threaded_channel_factory
 from .emoji import Emoji
@@ -2066,8 +2066,7 @@ class Client:
             result = user_command(name=name, description=description, guild_ids=guild_ids,
                                   default_permission=default_permission, force_global=force_global,
                                   default_member_permissions=default_member_permissions,
-                                  dm_permission=dm_permission,
-                                  permissions=permissions)(func)
+                                  dm_permission=dm_permission)(func)
             self._application_commands_to_add.add(result)
             return result
 
@@ -2111,8 +2110,7 @@ class Client:
             result = message_command(name=name, description=description, guild_ids=guild_ids,
                                      default_permission=default_permission, force_global=force_global,
                                      default_member_permissions=default_member_permissions,
-                                     dm_permission=dm_permission,
-                                     permissions=permissions)(func)
+                                     dm_permission=dm_permission)(func)
             self._application_commands_to_add.add(result)
             return result
 
@@ -2156,8 +2154,7 @@ class Client:
             result = slash_command(name=name, description=description, guild_ids=guild_ids,
                                    default_permission=default_permission, force_global=force_global,
                                    default_member_permissions=default_member_permissions,
-                                   dm_permission=dm_permission,
-                                   permissions=permissions)(func)
+                                   dm_permission=dm_permission)(func)
             self._application_commands_to_add.add(result)
             return result
 

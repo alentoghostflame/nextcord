@@ -754,9 +754,16 @@ class ConnectionState:
             for raw_response in data]
         # add_application_command can change the size of the dictionary, and apparently .items() doesn't prevent that
         # "RuntimeError: dictionary changed size during iteration" from happening. So a copy is made for just this.
+        perms_payload = []
         for signature, app_cmd in self._application_command_signatures.copy().items():
             if signature not in data_signatures and signature[2] == guild_id:  # index 2 of the tuple is the guild ID.
                 await self.register_application_command(app_cmd, guild_id)
+                if app_cmd.get_guild_payload(guild_id):
+                    perms_payload.append({
+                        "id": app_cmd.command_id.get(guild_id),
+                        "permissions": app_cmd.get_permissions_payload(guild_id)
+                    })
+        # TODO: auto permissions
 
     async def register_application_command(self, command: ApplicationCommand, guild_id: Optional[int] = None) -> None:
         """|coro|
