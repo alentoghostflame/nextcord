@@ -32,15 +32,5 @@ async def kick(interaction: Interaction, member: nextcord.Member):
 @permissions.guild_only()
 async def guild_command(interaction: Interaction):
     await interaction.response.send_message(f"This command is only available in guilds")
-    
-# restricting a command to roles - same way works with channels/members
-@bot.slash_command(description='role only command', guild_ids=[TESTING_GUILD_ID])
-@permissions.guild_permissions(
-    guild_id=TESTING_GUILD_ID, 
-    perms=[CommandPermission(target=123456789, permission=True, target_type=Role)]
-)
-async def role_only(interaction: Interaction):
-    await interaction.response.send_message(f"This command is only available for the role")
-
 
 bot.run("token")
