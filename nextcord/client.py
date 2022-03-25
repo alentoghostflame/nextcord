@@ -67,6 +67,7 @@ from .invite import Invite
 from .iterators import GuildIterator
 from .mentions import AllowedMentions
 from .object import Object
+from .permissions import CommandPermission, Permissions
 from .stage_instance import StageInstance
 from .state import ConnectionState
 from .sticker import (
@@ -2033,7 +2034,10 @@ class Client:
             description: str = MISSING,
             guild_ids: Iterable[int] = MISSING,
             default_permission: bool = MISSING,
-            force_global: bool = False
+            force_global: bool = False,
+            default_member_permissions: Optional[Permissions] = None,
+            dm_permission: bool = True,
+            permissions: Optional[dict[int, CommandPermission]] = None,
     ):
         """Creates a User context command from the decorated function.
 
@@ -2050,10 +2054,20 @@ class Client:
         force_global: :class:`bool`
             If True, will force this command to register as a global command, even if `guild_ids` is set. Will still
             register to guilds. Has no effect if `guild_ids` are never set or added to.
+        default_member_permissions: :class:`Permissions`
+            Default permissions for members that do not have a specific permission set.
+        dm_permission: :class:`bool`
+            If ``False``, this command will not be available in DMs. Defaults to Discord's default.
+        permissions: :class:`dict`
+            A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
+            :class:`Role`, :class:`Member` or :class:`Guild`.
         """
         def decorator(func: Callable):
             result = user_command(name=name, description=description, guild_ids=guild_ids,
-                                  default_permission=default_permission, force_global=force_global)(func)
+                                  default_permission=default_permission, force_global=force_global,
+                                  default_member_permissions=default_member_permissions,
+                                  dm_permission=dm_permission,
+                                  permissions=permissions)(func)
             self._application_commands_to_add.add(result)
             return result
 
@@ -2065,7 +2079,10 @@ class Client:
             description: str = MISSING,
             guild_ids: Iterable[int] = MISSING,
             default_permission: bool = MISSING,
-            force_global: bool = False
+            force_global: bool = False,
+            default_member_permissions: Optional[Permissions] = None,
+            dm_permission: bool = True,
+            permissions: Optional[dict[int, CommandPermission]] = None,
     ):
         """Creates a Message context command from the decorated function.
 
@@ -2082,10 +2099,20 @@ class Client:
         force_global: :class:`bool`
             If True, will force this command to register as a global command, even if `guild_ids` is set. Will still
             register to guilds. Has no effect if `guild_ids` are never set or added to.
+        default_member_permissions: :class:`Permissions`
+            Default permissions for members that do not have a specific permission set.
+        dm_permission: :class:`bool`
+            If ``False``, this command will not be available in DMs. Defaults to Discord's default.
+        permissions: :class:`dict`
+            A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
+            :class:`Role`, :class:`Member` or :class:`Guild`.
         """
         def decorator(func: Callable):
             result = message_command(name=name, description=description, guild_ids=guild_ids,
-                                     default_permission=default_permission, force_global=force_global)(func)
+                                     default_permission=default_permission, force_global=force_global,
+                                     default_member_permissions=default_member_permissions,
+                                     dm_permission=dm_permission,
+                                     permissions=permissions)(func)
             self._application_commands_to_add.add(result)
             return result
 
@@ -2097,7 +2124,10 @@ class Client:
             description: str = MISSING,
             guild_ids: Iterable[int] = MISSING,
             default_permission: bool = MISSING,
-            force_global: bool = False
+            force_global: bool = False,
+            default_member_permissions: Optional[Permissions] = None,
+            dm_permission: bool = True,
+            permissions: Optional[dict[int, CommandPermission]] = None,
     ):
         """Creates a Slash application command from the decorated function.
 
@@ -2114,10 +2144,20 @@ class Client:
         force_global: :class:`bool`
             If True, will force this command to register as a global command, even if `guild_ids` is set. Will still
             register to guilds. Has no effect if `guild_ids` are never set or added to.
+        default_member_permissions: :class:`Permissions`
+            Default permissions for members that do not have a specific permission set.
+        dm_permission: :class:`bool`
+            If ``False``, this command will not be available in DMs. Defaults to Discord's default.
+        permissions: :class:`dict`
+            A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
+            :class:`Role`, :class:`Member` or :class:`Guild`.
         """
         def decorator(func: Callable):
             result = slash_command(name=name, description=description, guild_ids=guild_ids,
-                                   default_permission=default_permission, force_global=force_global)(func)
+                                   default_permission=default_permission, force_global=force_global,
+                                   default_member_permissions=default_member_permissions,
+                                   dm_permission=dm_permission,
+                                   permissions=permissions)(func)
             self._application_commands_to_add.add(result)
             return result
 

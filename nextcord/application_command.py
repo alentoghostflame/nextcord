@@ -3396,6 +3396,7 @@ def message_command(
         If ``False``, this command will not be available in DMs. Defaults to Discord's default.
     permissions: :class:`dict`
         A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
+        :class:`Role`, :class:`Member` or :class:`Guild`.
     """
 
     def decorator(func: Callable) -> MessageApplicationCommand:
@@ -3448,6 +3449,7 @@ def user_command(
         If ``False``, this command will not be available in DMs. Defaults to Discord's default.
     permissions: :class:`dict`
         A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
+        :class:`Role`, :class:`Member` or :class:`Guild`.
     """
 
     def decorator(func: Callable) -> UserApplicationCommand:
