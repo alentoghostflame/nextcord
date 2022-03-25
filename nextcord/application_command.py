@@ -3318,9 +3318,9 @@ def slash_command(
     description: str = MISSING,
     guild_ids: Iterable[int] = MISSING,
     force_global: bool = False,
-    default_member_permissions: Permissions = None,
+    default_member_permissions: Optional[Permissions] = None,
     dm_permission: bool = True,
-    permissions: dict[int, CommandPermission] = None,
+    permissions: Optional[dict[int, CommandPermission]] = None,
 ):
     """Creates a Slash application command from the decorated function.
     Used inside :class:`ClientCog`'s or something that subclasses it.
