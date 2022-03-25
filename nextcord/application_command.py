@@ -57,11 +57,10 @@ from .interactions import Interaction
 from .guild import Guild
 from .member import Member
 from .message import Attachment, Message
-from .permissions import Permissions
-from .permissions import CommandPermission
+from .permissions import CommandPermission, Permissions
 from .role import Role
 from .user import User
-from .utils import MISSING, maybe_coroutine, find
+from .utils import MISSING, find, maybe_coroutine, parse_docstring
 
 if TYPE_CHECKING:
     from .state import ConnectionState
@@ -77,15 +76,30 @@ else:
     _CustomTypingMetaBase = object
 
 __all__ = (
-    "ApplicationCommand",
-    "ApplicationSubcommand",
+    "AppCmdCallbackWrapper",
+    # "AppCmdWrapperMixin",
+    "ApplicationCommandOption",
+    # "BaseCommandOption",
+    "OptionConverter",
     "ClientCog",
-    "Mentionable",
-    "message_command",
+    "CallbackMixin",
+    # "AutocompleteOptionMixin",
+    # "AutocompleteCommandMixin",
     "SlashOption",
+    # "SlashCommandOption",
+    # "SlashCommandMixin",
+    "SlashApplicationSubcommand",
+    "SlashApplicationCommand",
+    "UserApplicationCommand",
+    "MessageApplicationCommand",
     "slash_command",
+    "message_command",
     "user_command",
+    "Mentionable",
 )
+
+# Maximum allowed length of a command or option description
+_MAX_COMMAND_DESCRIPTION_LENGTH = 100
 
 T = TypeVar("T")
 FuncT = TypeVar("FuncT", bound=Callable[..., Any])
@@ -102,15 +116,14 @@ DEFAULT_SLASH_DESCRIPTION = "No description provided."
 class AppCmdCallbackWrapper:
     def __new__(
             cls,
-            callback: Union[Callable, AppCmdCallbackWrapper, BaseApplicationCommand, BaseApplicationSubcommand],
+            callback: Union[Callable, AppCmdCallbackWrapper, BaseApplicationCommand, SlashApplicationSubcommand],
             *args,
             **kwargs,
     ):
         # wrapper = cls(callback)
         wrapper = super(AppCmdCallbackWrapper, cls).__new__(cls)
         wrapper.__init__(callback, *args, **kwargs)
-        if isinstance(callback, (BaseApplicationCommand, BaseApplicationSubcommand)):
-            print(callback, type(callback), wrapper, type(wrapper))
+        if isinstance(callback, (BaseApplicationCommand, SlashApplicationSubcommand)):
             callback.modify_callbacks += wrapper.modify_callbacks
             return callback
         else:
@@ -206,7 +219,12 @@ class ApplicationCommandOption:
 
 
 class BaseCommandOption(ApplicationCommandOption):
-    def __init__(self, parameter: Parameter, parent_cog: ClientCog = MISSING):
+    def __init__(
+        self,
+        parameter: Parameter,
+        command: Union[BaseApplicationCommand],
+        parent_cog: Optional[ClientCog] = MISSING
+    ):
         """Represents an application command option, but takes a Parameter and ClientCog as an argument.
 
         Parameters
@@ -218,6 +236,7 @@ class BaseCommandOption(ApplicationCommandOption):
         """
         ApplicationCommandOption.__init__(self)
         self.parameter: Parameter = parameter
+        self.command: BaseApplicationCommand = command
         self.functional_name: str = parameter.name
         """Name of the kwarg in the function/method"""
         self.parent_cog: Optional[ClientCog] = parent_cog
@@ -262,16 +281,22 @@ class ClientCog:
                 if is_static_method:
                     value = value.__func__
                 # if isinstance(value, ApplicationCommand):
-                if isinstance(value, BaseApplicationCommand):
+                if isinstance(value, SlashApplicationCommand):
+                    value.parent_cog = self
+                    value.from_callback(value.callback, call_children=False)
+                    self.__cog_application_commands__.append(value)
+                elif isinstance(value, SlashApplicationSubcommand):
+                    # As ApplicationSubcommands are part of a parent command and
+                    #  not usable on their own, we don't add them to the command list, but do set the self_argument and
+                    #  run them from the callback.
+                    value.parent_cog = self
+                    value.from_callback(value.callback, call_children=False)
+                elif isinstance(value, BaseApplicationCommand):
                     value.parent_cog = self
                     value.from_callback(value.callback)
                     self.__cog_application_commands__.append(value)
                 # elif isinstance(value, ApplicationSubcommand):
-                elif isinstance(value, BaseApplicationSubcommand):
-                    # As ApplicationSubcommands are part of a parent command and
-                    # not usable on their own, we mostly ignore them, but do set the self_argument.
-                    value.parent_cog = self
-                    value.from_callback(value.callback)
+
 
     @property
     def __cog_to_register__(self) -> List[BaseApplicationCommand]:
@@ -366,9 +391,10 @@ class CallbackMixin:
         self.error_callback: Optional[Callable] = None
         self.checks: List[ApplicationCheck] = []
         if self.callback:
+            if isinstance(callback, AppCmdCallbackWrapper):
+                self.callback = callback.callback
             if not asyncio.iscoroutinefunction(self.callback):
-                print(self.callback, type(self.callback))
-                raise TypeError("Callback must be a coroutine")
+                raise TypeError(f"{self.error_name} Callback must be a coroutine")
         self.parent_cog = parent_cog
 
     @property
@@ -451,7 +477,7 @@ class CallbackMixin:
                     if isinstance(param.annotation, str):
                         # Thank you Disnake for the guidance to use this.
                         param = param.replace(annotation=typehints.get(name, param.empty))
-                    arg = option_class(param, parent_cog=self.parent_cog)
+                    arg = option_class(param, self, parent_cog=self.parent_cog)
                     self.options[arg.name] = arg
 
     async def can_run(self, interaction: Interaction):
@@ -504,7 +530,6 @@ class CallbackMixin:
                 )
 
         # Command checks
-        print(f"Check list {self.checks}")
         for check in self.checks:
             try:
                 check_result = await maybe_coroutine(check, interaction)
@@ -725,50 +750,6 @@ class AutocompleteCommandMixin:
         raise NotImplementedError
 
 
-class SlashCommandMixin(metaclass=ABCMeta):
-    options: Dict[str, SlashCommandOption]
-    children: Dict[str, SlashCommandMixin]
-
-    @abstractmethod
-    async def invoke_callback(self, interaction: Interaction, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    async def invoke_callback_with_hooks(self, state: ConnectionState, interaction: Interaction, *args, **kwargs):
-        pass
-
-    @property
-    @abstractmethod
-    def error_name(self) -> str:
-        pass
-
-    async def call_slash(self, state: ConnectionState, interaction: Interaction, option_data: List[Dict[str, Any]] = None):
-        if option_data is None:
-            option_data = interaction.data.get("options", {})
-        if self.children:
-            await self.children[option_data[0]["name"]].call_slash(state, interaction, option_data[0].get("options", {}))
-        else:
-            kwargs = {}
-            uncalled_args = self.options.copy()
-            for arg_data in option_data:
-                if arg_data["name"] in uncalled_args:
-                    uncalled_args.pop(arg_data["name"])
-                    kwargs[self.options[arg_data["name"]].functional_name] = \
-                        await self.options[arg_data["name"]].handle_value(state, arg_data["value"],
-                                                                          interaction)
-                else:
-                    # TODO: Handle this better.
-                    raise NotImplementedError(
-                        f"An argument was provided that wasn't already in the function, did you"
-                        f"recently change it?\nRegistered Options: {self.options}, Discord-sent"
-                        f"args: {interaction.data['options']}, broke on {arg_data}"
-                    )
-            for uncalled_arg in uncalled_args.values():
-                kwargs[uncalled_arg.functional_name] = uncalled_arg.default
-            # await self.invoke_callback(interaction, **kwargs)
-            await self.invoke_callback_with_hooks(state, interaction, **kwargs)
-
-
 # Extends Any so that type checkers won't complain that it's a default for a parameter of a different type
 class SlashOption(ApplicationCommandOption, _CustomTypingMetaBase):
     """Provides Discord with information about an option in a command.
@@ -837,6 +818,7 @@ class SlashOption(ApplicationCommandOption, _CustomTypingMetaBase):
 
 
 class SlashCommandOption(BaseCommandOption, SlashOption, AutocompleteOptionMixin):
+    command: Union[SlashApplicationCommand, SlashApplicationSubcommand]
     option_types = {
         str: ApplicationCommandOptionType.string,
         int: ApplicationCommandOptionType.integer,
@@ -851,8 +833,13 @@ class SlashCommandOption(BaseCommandOption, SlashOption, AutocompleteOptionMixin
         Attachment: ApplicationCommandOptionType.attachment,
     }
     """Maps Python annotations/typehints to Discord Application Command type values."""
-    def __init__(self, parameter: Parameter, parent_cog: ClientCog = None):
-        BaseCommandOption.__init__(self, parameter)
+    def __init__(
+            self,
+            parameter: Parameter,
+            commmand: Union[SlashApplicationCommand, SlashApplicationSubcommand],
+            parent_cog: Optional[ClientCog] = None
+    ):
+        BaseCommandOption.__init__(self, parameter, commmand, parent_cog)
         SlashOption.__init__(self)  # We subclassed SlashOption because we must handle all attributes it has.
         AutocompleteOptionMixin.__init__(self, parent_cog=parent_cog)
         # self.functional_name = parameter.name
@@ -926,10 +913,13 @@ class SlashCommandOption(BaseCommandOption, SlashOption, AutocompleteOptionMixin
     @property
     def description(self) -> str:
         """If no description is set, it returns "No description provided" """
-        if not self._description:
-            return "No description provided"
-        else:
+        # noinspection PyProtectedMember
+        if self._description is not MISSING:
             return self._description
+        elif docstring := self.command._parsed_docstring["args"].get(self.functional_name):
+            return docstring
+        else:
+            return DEFAULT_SLASH_DESCRIPTION
 
     @description.setter
     def description(self, value: str):
@@ -953,7 +943,7 @@ class SlashCommandOption(BaseCommandOption, SlashOption, AutocompleteOptionMixin
         ):
             return valid_type
         else:
-            raise NotImplementedError(f'Type "{param_typing}" isn\'t a supported typing for Application Commands.')
+            raise NotImplementedError(f'{self.command.error_name} Type "{param_typing}" isn\'t a supported typing for Application Commands.')
 
     def verify(self) -> None:
         """This should run through :class:`SlashOption` variables and raise errors when conflicting data is given."""
@@ -998,61 +988,55 @@ class SlashCommandOption(BaseCommandOption, SlashOption, AutocompleteOptionMixin
             return value
 
 
-class BaseApplicationSubcommand(CallbackMixin, AppCmdWrapperMixin):
-    def __init__(
-            self,
-            name: str = MISSING,
-            description: str = MISSING,
-            callback: Callable = MISSING,
-            parent_cmd: Union[BaseApplicationCommand, BaseApplicationSubcommand] = MISSING,
-            cmd_type: ApplicationCommandOptionType = MISSING,
-            parent_cog: Optional[ClientCog] = None,
-    ):
-        AppCmdWrapperMixin.__init__(self, callback)
-        if isinstance(callback, AppCmdCallbackWrapper):
-            callback = callback.callback
+class SlashCommandMixin(CallbackMixin):
+    _description: Optional[str]
+
+    def __init__(self, callback: Optional[Callable], parent_cog: Optional[ClientCog]):
         CallbackMixin.__init__(self, callback=callback, parent_cog=parent_cog)
-
-        self.name: str = name
-        self._description: str = description
-        self.type: ApplicationCommandOptionType = cmd_type
-        self.parent_cmd: Union[BaseApplicationCommand, BaseApplicationSubcommand] = parent_cmd
-
         self.options: Dict[str, SlashCommandOption] = {}
-        self.children: Dict[str, BaseApplicationSubcommand] = {}
+        self.children: Dict[str, SlashApplicationSubcommand] = {}
+        self._parsed_docstring: Optional[Dict[str, Any]] = None
 
     @property
     def description(self) -> str:
-        return self._description
+        if self._description is not MISSING:
+            return self._description
+        elif docstring := self._parsed_docstring["description"]:
+            return docstring
+        else:
+            return DEFAULT_SLASH_DESCRIPTION
 
-    @description.setter
-    def description(self, new_description: str):
-        self._description = new_description
+    def from_callback(self, callback: Callable, option_class: Optional[Type[BaseCommandOption]] = SlashCommandOption):
+        CallbackMixin.from_callback(self, callback=callback, option_class=option_class)
+        # Right now, only slash commands can have descriptions. If User/Message commands gain descriptions, move
+        #  this to CallbackMixin.
+        self._parsed_docstring = parse_docstring(callback, _MAX_COMMAND_DESCRIPTION_LENGTH)
 
-    @property
-    def payload(self) -> dict:
-        # noinspection PyUnresolvedReferences
-        ret = {
-            "type": self.type.value,
-            "name": str(self.name),  # Might as well stringify the name, will come in handy if people try using numbers.
-            "description": self.description,
-        }
-        return ret
-
-    def from_callback(
-            self,
-            callback: Callable,
-            option_class: Type[SlashCommandOption] = SlashCommandOption,
-            call_children: bool = False
-    ):
-        super().from_callback(callback=callback, option_class=option_class)
-        if call_children:
-            if self.children:
-                for child in self.children.values():
-                    child.from_callback(callback=child.callback, option_class=option_class, call_children=call_children)
-        for modify_callback in self.modify_callbacks:
-            modify_callback(self)
-        return self
+    async def call_slash(self, state: ConnectionState, interaction: Interaction, option_data: List[Dict[str, Any]] = None):
+        if option_data is None:
+            option_data = interaction.data.get("options", {})
+        if self.children:
+            await self.children[option_data[0]["name"]].call_slash(state, interaction, option_data[0].get("options", {}))
+        else:
+            kwargs = {}
+            uncalled_args = self.options.copy()
+            for arg_data in option_data:
+                if arg_data["name"] in uncalled_args:
+                    uncalled_args.pop(arg_data["name"])
+                    kwargs[self.options[arg_data["name"]].functional_name] = \
+                        await self.options[arg_data["name"]].handle_value(state, arg_data["value"],
+                                                                          interaction)
+                else:
+                    # TODO: Handle this better.
+                    raise NotImplementedError(
+                        f"An argument was provided that wasn't already in the function, did you"
+                        f"recently change it?\nRegistered Options: {self.options}, Discord-sent"
+                        f"args: {interaction.data['options']}, broke on {arg_data}"
+                    )
+            for uncalled_arg in uncalled_args.values():
+                kwargs[uncalled_arg.functional_name] = uncalled_arg.default
+            # await self.invoke_callback(interaction, **kwargs)
+            await self.invoke_callback_with_hooks(state, interaction, **kwargs)
 
 
 class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
@@ -1063,29 +1047,17 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
             callback: Callable = MISSING,
             cmd_type: ApplicationCommandType = MISSING,
             guild_ids: Iterable[int] = MISSING,
-            default_permission: bool = MISSING,
             parent_cog: Optional[ClientCog] = None,
-            force_global: bool = False,
-            default_member_permissions: Permissions = None,
-            dm_permission: bool = True,
-            permissions: dict[int, CommandPermission] = None,
-            # nsfw: bool = False
+            force_global: bool = False
     ):
         AppCmdWrapperMixin.__init__(self, callback)
-        if isinstance(callback, AppCmdCallbackWrapper):
-            callback = callback.callback
         CallbackMixin.__init__(self, callback=callback, parent_cog=parent_cog)
         self._state: Optional[ConnectionState] = None
         self.type: ApplicationCommandType = cmd_type
         self.name: str = name
         self._description: str = description
         self.guild_ids_to_rollout: Set[int] = set(guild_ids) if guild_ids else set()
-        self.default_permission: bool = default_permission
         self.force_global: bool = force_global
-        self.default_member_permissions = default_member_permissions
-        self.dm_permission = dm_permission
-        self.permissions = permissions if permissions else {}
-        # self.nsfw = nsfw
 
         self.command_ids: Dict[Optional[int], int] = {}  # {Guild ID (None for global): command ID}
         self.options: Dict[str, SlashOption] = {}
@@ -1166,29 +1138,13 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
             "name": str(self.name),  # Might as well stringify the name, will come in handy if people try using numbers.
             "description": self.description,
         }
-        if self.default_permission is not MISSING:
-            ret["default_permission"] = self.default_permission
-        else:
-            ret["default_permission"] = True
         if guild_id:
             ret["guild_id"] = guild_id
-        if self.default_member_permissions:
-            ret["default_member_permissions"] = str(self.default_member_permissions.value)
-        if self.dm_permission:
-            ret["dm_permission"] = self.dm_permission
-        # if self.nsfw:
-        #     ret[...] = self.nsfw # TODO: age gated commands when documented
         return ret
 
     def get_guild_payload(self, guild_id: int):
         warnings.warn(".get_guild_payload is deprecated, use .get_payload(guild_id) instead.", stacklevel=2, category=FutureWarning)
         return self.get_payload(guild_id)
-    
-    def get_permissions_payload(self, guild_id: int) -> dict:
-        perms = []
-        for perm in self.permissions.get(guild_id):
-            perms.append(perm.payload)
-        return {'permissions': perms}
 
     @property
     def global_payload(self) -> dict:
@@ -1219,7 +1175,7 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
         cmd_payload = self.get_payload(guild_id)
         if cmd_payload.get("guild_id", 0) != int(raw_payload.get("guild_id", 0)):
             return False
-        if not check_dictionary_values(cmd_payload, raw_payload, "default_permission", "description", "type", "name"):
+        if not check_dictionary_values(cmd_payload, raw_payload, "description", "type", "name"):
             return False
         if len(cmd_payload.get("options", [])) != len(raw_payload.get("options", [])):
             return False
@@ -1254,7 +1210,6 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
         valid: :class:`bool`
             If the interaction could possibly be for this command.
         """
-        print("Beginning validity check.")
         data = interaction.data
         our_payload = self.get_payload(data.get("guild_id", None))
 
@@ -1269,29 +1224,10 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
                     )) and (  # This checks if it's a subcommand (group).
                 found_opt := our_options.get(inter_options[0]["name"])  # This checks if the name matches an option.
             ) and inter_options[0]["type"] == found_opt["type"]:  # And this makes sure both are the same type.
-                print("Recursing further.")
                 return recursive_subcommand_check(inter_options[0], found_opt)  # If all of the above pass, recurse.
             else:
                 # It isn't a subcommand (group), run normal option checks.
-                print("Launching option checks.")
                 return option_check(inter_options, cmd_options)
-
-        # def option_check(inter_pos: dict, cmd_pos: dict) -> bool:
-            # inter_options = inter_pos.get("options")
-            # cmd_options = cmd_pos.get("options")
-            #
-            # all_our_options = {}
-            # required_options = {}
-            # for our_opt in cmd_options:
-            #     all_our_options[our_opt["name"]] = our_opt
-            #     if our_opt.get("required"):
-            #         required_options[our_opt["name"]] = our_opt
-            #
-            # if (inter_options is None and cmd_options is None) or (
-            #     len(inter_options) == 0 and len(cmd_options) == 0
-            # ):
-            #     # If they both don't exist or have a length of zero, run basic checks.
-            #     return ()
 
         def option_check(inter_options: dict, cmd_options: dict) -> bool:
             all_our_options = {}
@@ -1340,11 +1276,9 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
             print("Failed basic dictionary check.")
             return False
         else:
-            print("Starting more complex check.")
             data_options = data.get("options")
             payload_options = our_payload.get("options")
             if data_options and payload_options:
-                print("Starting recursive subcommand check.")
                 return recursive_subcommand_check(data, our_payload)
             elif data_options is None and payload_options is None:
                 return True  # User and Message commands don't have options.
@@ -1352,8 +1286,6 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
                 print(f"Mismatch between data and payload options: {data_options} {payload_options}")
                 # There is a mismatch between the two, fail it.
                 return False
-
-
 
     def from_callback(
             self,
@@ -1366,28 +1298,27 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
         raise NotImplementedError
 
 
-class SlashApplicationSubcommand(BaseApplicationSubcommand, SlashCommandMixin, AutocompleteCommandMixin):
-    children: Dict[str, SlashApplicationSubcommand]
-
+class SlashApplicationSubcommand(SlashCommandMixin, AutocompleteCommandMixin, AppCmdWrapperMixin):
     def __init__(
             self,
             name: str = MISSING,
             description: str = MISSING,
             callback: Callable = MISSING,
-            parent_cmd: Union[BaseApplicationCommand, BaseApplicationSubcommand] = MISSING,
+            parent_cmd: Union[SlashApplicationCommand, SlashApplicationSubcommand] = MISSING,
             cmd_type: ApplicationCommandOptionType = MISSING,
             parent_cog: Optional[ClientCog] = None,
     ):
-        BaseApplicationSubcommand.__init__(self, name=name, description=description, callback=callback,
-                                           parent_cmd=parent_cmd, cmd_type=cmd_type, parent_cog=parent_cog)
+        SlashCommandMixin.__init__(self, callback=callback, parent_cog=parent_cog)
         AutocompleteCommandMixin.__init__(self, parent_cog)
+        AppCmdWrapperMixin.__init__(self, callback)
 
-    @property
-    def description(self) -> str:
-        if self._description is MISSING:
-            return DEFAULT_SLASH_DESCRIPTION
-        else:
-            return self._description
+        self.name: str = name
+        self._description: str = description
+        self.type: ApplicationCommandOptionType = cmd_type
+        self.parent_cmd: Union[SlashApplicationCommand, SlashApplicationSubcommand] = parent_cmd
+
+        self.options: Dict[str, SlashCommandOption] = {}
+        self.children: Dict[str, SlashApplicationSubcommand] = {}
 
     async def call(self, state: ConnectionState, interaction: Interaction, option_data):
         if self.children:
@@ -1397,7 +1328,12 @@ class SlashApplicationSubcommand(BaseApplicationSubcommand, SlashCommandMixin, A
 
     @property
     def payload(self) -> dict:
-        ret = super().payload
+        # noinspection PyUnresolvedReferences
+        ret = {
+            "type": self.type.value,
+            "name": str(self.name),  # Might as well stringify the name, will come in handy if people try using numbers.
+            "description": self.description,
+        }
         if self.children:
             ret["options"] = [child.payload for child in self.children.values()]
         elif self.options:
@@ -1408,9 +1344,15 @@ class SlashApplicationSubcommand(BaseApplicationSubcommand, SlashCommandMixin, A
             self,
             callback: Callable,
             option_class: Type[SlashCommandOption] = SlashCommandOption,
-            call_children: bool = False
+            call_children: bool = True
     ):
-        super().from_callback(callback=callback, option_class=option_class, call_children=call_children)
+        SlashCommandMixin.from_callback(self, callback=callback, option_class=option_class)
+        if call_children:
+            if self.children:
+                for child in self.children.values():
+                    child.from_callback(callback=child.callback, option_class=option_class, call_children=call_children)
+        for modify_callback in self.modify_callbacks:
+            modify_callback(self)
         super().from_autocomplete()
 
     def subcommand(
@@ -1431,31 +1373,34 @@ class SlashApplicationSubcommand(BaseApplicationSubcommand, SlashCommandMixin, A
         return decorator
 
 
-class SlashApplicationCommand(BaseApplicationCommand, SlashCommandMixin, AutocompleteCommandMixin):
+class SlashApplicationCommand(SlashCommandMixin, BaseApplicationCommand, AutocompleteCommandMixin):
     def __init__(
             self,
             name: str = MISSING,
             description: str = MISSING,
             callback: Callable = MISSING,
             guild_ids: Iterable[int] = MISSING,
-            default_permission: bool = MISSING,
             parent_cog: Optional[ClientCog] = None,
             force_global: bool = False
     ):
         BaseApplicationCommand.__init__(self, name=name, description=description, callback=callback,
                                         cmd_type=ApplicationCommandType.chat_input, guild_ids=guild_ids,
-                                        default_permission=default_permission, parent_cog=parent_cog,
+                                        parent_cog=parent_cog,
                                         force_global=force_global)
         AutocompleteCommandMixin.__init__(self, parent_cog=parent_cog)
-        self.children: Dict[str, SlashApplicationSubcommand] = {}
-        self.options: Dict[str, SlashCommandOption] = {}  # Here for typing purposes.
+        SlashCommandMixin.__init__(self, callback=callback, parent_cog=parent_cog)
+        # self.children: Dict[str, SlashApplicationSubcommand] = {}
+        # self.options: Dict[str, SlashCommandOption] = {}  # Here for typing purposes.
 
+    # @property
+    # def description(self) -> str:
+    #     if self._description is MISSING:
+    #         return DEFAULT_SLASH_DESCRIPTION
+    #     else:
+    #         return self._description
     @property
     def description(self) -> str:
-        if self._description is MISSING:
-            return DEFAULT_SLASH_DESCRIPTION
-        else:
-            return self._description
+        return super().description
 
     def get_payload(self, guild_id: Optional[int]):
         ret = super().get_payload(guild_id)
@@ -1480,10 +1425,11 @@ class SlashApplicationCommand(BaseApplicationCommand, SlashCommandMixin, Autocom
             self,
             callback: Callable,
             option_class: Type[SlashCommandOption] = SlashCommandOption,
-            call_children: bool = False
+            call_children: bool = True
     ):
-        super().from_callback(callback=callback, option_class=option_class)
-        super().from_autocomplete()
+        BaseApplicationCommand.from_callback(self, callback=callback, option_class=option_class)
+        SlashCommandMixin.from_callback(self, callback=callback)
+        AutocompleteCommandMixin.from_autocomplete(self)
         if call_children and self.children:
             for child in self.children.values():
                 child.from_callback(callback=child.callback, option_class=option_class, call_children=call_children)
@@ -1511,13 +1457,12 @@ class UserApplicationCommand(BaseApplicationCommand):
             name: str = MISSING,
             callback: Callable = MISSING,
             guild_ids: Iterable[int] = MISSING,
-            default_permission: bool = MISSING,
             parent_cog: Optional[ClientCog] = None,
             force_global: bool = False
     ):
         super().__init__(name=name, description="", callback=callback,
                          cmd_type=ApplicationCommandType.user, guild_ids=guild_ids,
-                         default_permission=default_permission, parent_cog=parent_cog, force_global=force_global)
+                         parent_cog=parent_cog, force_global=force_global)
 
     async def call_from_interaction(self, interaction: Interaction):
         await self.call(self._state, interaction)
@@ -1539,13 +1484,12 @@ class MessageApplicationCommand(BaseApplicationCommand):
             name: str = MISSING,
             callback: Callable = MISSING,
             guild_ids: Iterable[int] = MISSING,
-            default_permission: bool = MISSING,
             parent_cog: Optional[ClientCog] = None,
             force_global: bool = False
     ):
         super().__init__(name=name, description="", callback=callback,
                          cmd_type=ApplicationCommandType.message, guild_ids=guild_ids,
-                         default_permission=default_permission, parent_cog=parent_cog, force_global=force_global)
+                         parent_cog=parent_cog, force_global=force_global)
 
     async def call_from_interaction(self, interaction: Interaction):
         await self.call(self._state, interaction)
@@ -1573,9 +1517,10 @@ class OldSlashOption(_CustomTypingMetaBase):
     Parameters
     ----------
     name: :class:`str`
-        The name of the Option on Discords side. If left as None, it defaults to the parameter name.
+        The name of the Option that users will see. If not specified, it defaults to the parameter name.
     description: :class:`str`
-        The description of the Option on Discords side. If left as None, it defaults to "".
+        The description of the Option that users will see. If not specified, the docstring will be used. If no docstring is found for the
+        parameter, it defaults to "No description provided".
     required: :class:`bool`
         If a user is required to provide this argument before sending the command. Defaults to Discords choice. (False at this time)
     choices: Union[Dict[:class:`str`, Union[:class:`str`, :class:`int`, :class:`float`]], Iterable[Union[:class:`str`, :class:`int`, :class:`float`]]]
@@ -1668,9 +1613,10 @@ class OldCommandOption(OldSlashOption):
     }
     """Maps Python annotations/typehints to Discord Application Command type values."""
 
-    def __init__(self, parameter: Parameter):
+    def __init__(self, parameter: Parameter, command: ApplicationSubcommand):
         super().__init__()
         self.parameter = parameter
+        self.command = command
         cmd_arg_given = False
         cmd_arg = SlashOption()
 
@@ -1721,11 +1667,17 @@ class OldCommandOption(OldSlashOption):
 
     @property
     def description(self) -> str:
-        """If no description is set, it returns "No description provided" """
-        if not self._description:
-            return "No description provided"
-        else:
+        """
+        Returns the description of the command. If the description is MISSING, the docstring will be used.
+        If no docstring is found for the command callback, it defaults to "No description provided".
+        """
+        if self._description is not MISSING:
             return self._description
+        elif docstring := self.command._parsed_docstring["args"].get(self.name):
+            return docstring
+        else:
+            return "No description provided"
+
 
     @description.setter
     def description(self, value: str):
@@ -1804,7 +1756,7 @@ class OldCommandOption(OldSlashOption):
             if ret:
                 return ret
             else:
-                # Return an Member object if the required data is available, otherwise fallback to User.
+                # Return a Member object if the required data is available, otherwise fallback to User.
                 if "members" in interaction.data["resolved"] and (
                     interaction.guild,
                     interaction.guild_id,
@@ -1942,8 +1894,8 @@ class ApplicationSubcommand:
     name: :class:`str`
         The name of the subcommand that users will see. If not set, the name of the callback will be used.
     description: :class:`str`
-        The description of the subcommand that users will see. If not set, it will be the minimum value that
-        Discord supports.
+        The description of the subcommand that users will see. If not specified, the docstring will be used.
+        If no docstring is found for the subcommand callback, it defaults to "No description provided".
     """
 
     def __init__(
@@ -1969,6 +1921,7 @@ class ApplicationSubcommand:
         self._self_argument: Optional[ClientCog] = self_argument
         self.name: Optional[str] = name
         self._description: str = description
+        self._parsed_docstring: Optional[Dict[str, Any]] = None
 
         self.options: Dict[str, OldCommandOption] = {}
         self.children: Dict[str, ApplicationSubcommand] = {}
@@ -2027,12 +1980,15 @@ class ApplicationSubcommand:
     @property
     def description(self) -> str:
         """
-        Returns the description of the command. If the description is MISSING, it returns "No description provided"
+        Returns the description of the command. If the description is MISSING, the docstring will be used.
+        If no docstring is found for the command callback, it defaults to "No description provided".
         """
-        if self._description is MISSING:
-            return "No description provided"
-        else:
+        if self._description is not MISSING:
             return self._description
+        elif docstring := self._parsed_docstring["description"]:
+            return docstring
+        else:
+            return "No description provided"
 
     @description.setter
     def description(self, new_desc: str):
@@ -2085,7 +2041,7 @@ class ApplicationSubcommand:
         return self
 
     @property
-    def self_argument(self) -> Optional[Any]:
+    def self_argument(self) -> Optional[ClientCog]:
         """Returns the argument used for ``self``. Optional is used because :class:`ClientCog` isn't strictly correct."""
         return self._self_argument
 
@@ -2179,6 +2135,7 @@ class ApplicationSubcommand:
         # TODO: Add kwarg support.
         # ret = ApplicationSubcommand()
         self.set_callback(callback)
+        self._parsed_docstring = parse_docstring(callback, _MAX_COMMAND_DESCRIPTION_LENGTH)
         if not self.name:
             self.name = self.callback.__name__
         first_arg = True
@@ -2194,7 +2151,7 @@ class ApplicationSubcommand:
                 if isinstance(param.annotation, str):
                     # Thank you Disnake for the guidance to use this.
                     param = param.replace(annotation=typehints.get(name, param.empty))
-                arg = CommandOption(param)
+                arg = CommandOption(param, self)
                 self.options[arg.name] = arg
         return self
 
@@ -2674,8 +2631,8 @@ class ApplicationSubcommand:
         name: :class:`str`
             The name of the subcommand that users will see. If not set, the name of the callback will be used.
         description: :class:`str`
-            The description of the subcommand that users will see. If not set, it will be the minimum value that
-            Discord supports.
+            The description of the subcommand that users will see. If not specified, the docstring will be used.
+            If no docstring is found for the subcommand callback, it defaults to "No description provided".
         inherit_hooks: :class:`bool` default=False
             If ``True`` and this command has a parent :class:`ApplicationCommand` then this command
             will inherit all checks, application_command_before_invoke and application_command_after_invoke's defined on the the :class:`ApplicationCommand`
@@ -2770,11 +2727,10 @@ class ApplicationCommand(ApplicationSubcommand):
     name: :class:`str`
         Name of the command that users will see. If not set, it defaults to the name of the callback.
     description: :class:`str`
-        Description of the command that users will see. If not set, it defaults to the bare minimum Discord allows.
+        Description of the command that users will see. If not specified, the docstring will be used.
+        If no docstring is found for the command callback, it defaults to "No description provided".
     guild_ids: Iterable[:class:`int`]
         IDs of :class:`Guild`'s to add this command to. If unset, this will be a global command.
-    default_permission: :class:`bool`
-        If users should be able to use this command by default or not. Defaults to Discords default.
     force_global: :class:`bool`
         If True, will force this command to register as a global command, even if `guild_ids` is set. Will still
         register to guilds. Has no effect if `guild_ids` are never set or added to.
@@ -2787,7 +2743,6 @@ class ApplicationCommand(ApplicationSubcommand):
         name: str = MISSING,
         description: str = MISSING,
         guild_ids: Iterable[int] = MISSING,
-        default_permission: bool = MISSING,
         force_global: bool = False,
         inherit_hooks: bool = False,
     ):
@@ -2796,7 +2751,6 @@ class ApplicationCommand(ApplicationSubcommand):
         )
         self._state: Optional[ConnectionState] = None
         self.force_global: bool = force_global
-        self.default_permission: bool = default_permission or True
         self._guild_ids_to_rollout: Set[int] = set(guild_ids) if guild_ids else set()
         self._guild_ids: Set[int] = set()
         # Guild ID is key (None is global), command ID is value.
@@ -2844,18 +2798,13 @@ class ApplicationCommand(ApplicationSubcommand):
     @property
     def description(self) -> str:
         """
-        Returns the description of the command. If the description is MISSING, it returns "No description provided"
+        Returns the description of the command. If the description is MISSING, the docstring will be used.
+        If no docstring is found for the command callback, it defaults to "No description provided".
+        For user and message commands, the description will always be the empty string.
         """
-        if self._description is MISSING:
-            if self.type is ApplicationCommandType.chat_input:
-                return super().description
-            elif self.type in (
-                ApplicationCommandType.user,
-                ApplicationCommandType.message,
-            ):
-                return ""
-        else:
-            return self._description
+        if self.type in (ApplicationCommandType.user, ApplicationCommandType.message):
+            return ""
+        return super().description
 
     @property
     def global_payload(self) -> dict:
@@ -2972,8 +2921,6 @@ class ApplicationCommand(ApplicationSubcommand):
         payload = super().payload
         if self.type is not ApplicationCommandType.chat_input and "options" in payload:
             payload.pop("options")
-        if self.default_permission is not None:
-            payload["default_permission"] = self.default_permission
         return payload
 
     def _handle_resolved_message(self, message_data: dict) -> Message:
@@ -3063,7 +3010,6 @@ class ApplicationCommand(ApplicationSubcommand):
         if not check_dictionary_values(
             cmd_payload,
             raw_payload,
-            "default_permission",
             "description",
             "type",
             "name",
@@ -3301,8 +3247,8 @@ class ApplicationCommand(ApplicationSubcommand):
         name: :class:`str`
             The name of the subcommand that users will see. If not set, the name of the callback will be used.
         description: :class:`str`
-            The description of the subcommand that users will see. If not set, it will be the minimum value that
-            Discord supports.
+            The description of the subcommand that users will see. If not specified, the docstring will be used.
+            If no docstring is found for the subcommand callback, it defaults to "No description provided".
         inherit_hooks: :class:`bool` default=False
             If ``True`` and this command has a parent :class:`ApplicationCommand` then this command
             will inherit all checks, application_command_before_invoke and application_command_after_invoke's defined on the the :class:`ApplicationCommand`
@@ -3334,7 +3280,6 @@ def slash_command(
     name: str = MISSING,
     description: str = MISSING,
     guild_ids: Iterable[int] = MISSING,
-    default_permission: bool = MISSING,
     force_global: bool = False,
 ):
     """Creates a Slash application command from the decorated function.
@@ -3345,11 +3290,10 @@ def slash_command(
     name: :class:`str`
         Name of the command that users will see. If not set, it defaults to the name of the callback.
     description: :class:`str`
-        Description of the command that users will see. If not set, it defaults to the bare minimum Discord allows.
+        Description of the command that users will see. If not specified, the docstring will be used.
+        If no docstring is found for the command callback, it defaults to "No description provided".
     guild_ids: Iterable[:class:`int`]
         IDs of :class:`Guild`'s to add this command to. If unset, this will be a global command.
-    default_permission: :class:`bool`
-        If users should be able to use this command by default or not. Defaults to Discords default, `True`.
     force_global: :class:`bool`
         If True, will force this command to register as a global command, even if `guild_ids` is set. Will still
         register to guilds. Has no effect if `guild_ids` are never set or added to.
@@ -3369,7 +3313,6 @@ def slash_command(
             name=name,
             description=description,
             guild_ids=guild_ids,
-            default_permission=default_permission,
             force_global=force_global,
         )
         return app_cmd
@@ -3378,10 +3321,9 @@ def slash_command(
 
 
 def message_command(
-        name: str = MISSING,
-        guild_ids: Iterable[int] = MISSING,
-        default_permission: bool = MISSING,
-        force_global: bool = False
+    name: str = MISSING,
+    guild_ids: Iterable[int] = MISSING,
+    force_global: bool = False,
 ):
     """Creates a Message context command from the decorated function.
     Used inside :class:`ClientCog`'s or something that subclasses it.
@@ -3392,8 +3334,6 @@ def message_command(
         Name of the command that users will see. If not set, it defaults to the name of the callback.
     guild_ids: Iterable[:class:`int`]
         IDs of :class:`Guild`'s to add this command to. If unset, this will be a global command.
-    default_permission: :class:`bool`
-        If users should be able to use this command by default or not. Defaults to Discords default, `True`.
     force_global: :class:`bool`
         If True, will force this command to register as a global command, even if `guild_ids` is set. Will still
         register to guilds. Has no effect if `guild_ids` are never set or added to.
@@ -3408,14 +3348,12 @@ def message_command(
         #     name=name,
         #     description=description,
         #     guild_ids=guild_ids,
-        #     default_permission=default_permission,
         #     force_global=force_global
         # )
         app_cmd = MessageApplicationCommand(
             callback=func,
             name=name,
             guild_ids=guild_ids,
-            default_permission=default_permission,
             force_global=force_global,
         )
         return app_cmd
@@ -3424,10 +3362,9 @@ def message_command(
 
 
 def user_command(
-        name: str = MISSING,
-        guild_ids: Iterable[int] = MISSING,
-        default_permission: bool = MISSING,
-        force_global: bool = False,
+    name: str = MISSING,
+    guild_ids: Iterable[int] = MISSING,
+    force_global: bool = False,
 ):
     """Creates a User context command from the decorated function.
     Used inside :class:`ClientCog`'s or something that subclasses it.
@@ -3437,8 +3374,6 @@ def user_command(
         Name of the command that users will see. If not set, it defaults to the name of the callback.
     guild_ids: Iterable[:class:`int`]
         IDs of :class:`Guild`'s to add this command to. If unset, this will be a global command.
-    default_permission: :class:`bool`
-        If users should be able to use this command by default or not. Defaults to Discords default, `True`.
     force_global: :class:`bool`
         If True, will force this command to register as a global command, even if `guild_ids` is set. Will still
         register to guilds. Has no effect if `guild_ids` are never set or added to.
@@ -3451,7 +3386,6 @@ def user_command(
             callback=func,
             name=name,
             guild_ids=guild_ids,
-            default_permission=default_permission,
             force_global=force_global,
         )
         return app_cmd
