@@ -3342,7 +3342,7 @@ def slash_command(
     dm_permission: :class:`bool`
         If ``False``, this command will not be available in DMs. Defaults to Discord's default.
     permissions: :class:`dict`
-        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each.
+        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
         :class:`Role`, :class:`Member` or :class:`Guild`.
     """
 
@@ -3395,7 +3395,7 @@ def message_command(
     dm_permission: :class:`bool`
         If ``False``, this command will not be available in DMs. Defaults to Discord's default.
     permissions: :class:`dict`
-        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each.
+        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
     """
 
     def decorator(func: Callable) -> MessageApplicationCommand:
@@ -3447,7 +3447,7 @@ def user_command(
     dm_permission: :class:`bool`
         If ``False``, this command will not be available in DMs. Defaults to Discord's default.
     permissions: :class:`dict`
-        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each.
+        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each
     """
 
     def decorator(func: Callable) -> UserApplicationCommand:
