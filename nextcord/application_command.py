@@ -1049,9 +1049,9 @@ class BaseApplicationCommand(CallbackMixin, AppCmdWrapperMixin):
             guild_ids: Iterable[int] = MISSING,
             parent_cog: Optional[ClientCog] = None,
             force_global: bool = False,
-            default_member_permissions: Permissions = None,
+            default_member_permissions: Optional[Permissions] = None,
             dm_permission: bool = True,
-            permissions: dict[int, CommandPermission] = None,
+            permissions: Optional[dict[int, CommandPermission]] = None,
             #// nsfw: bool = False
     ):
         AppCmdWrapperMixin.__init__(self, callback)
@@ -1402,12 +1402,18 @@ class SlashApplicationCommand(SlashCommandMixin, BaseApplicationCommand, Autocom
             callback: Callable = MISSING,
             guild_ids: Iterable[int] = MISSING,
             parent_cog: Optional[ClientCog] = None,
-            force_global: bool = False
+            force_global: bool = False,
+            default_member_permissions: Optional[Permissions] = None,
+            dm_permission: bool = True,
+            permissions: Optional[dict[int, CommandPermission]] = None,
     ):
         BaseApplicationCommand.__init__(self, name=name, description=description, callback=callback,
                                         cmd_type=ApplicationCommandType.chat_input, guild_ids=guild_ids,
                                         parent_cog=parent_cog,
-                                        force_global=force_global)
+                                        force_global=force_global,
+                                        default_member_permissions=default_member_permissions,
+                                        dm_permission=dm_permission,
+                                        permissions=permissions)
         AutocompleteCommandMixin.__init__(self, parent_cog=parent_cog)
         SlashCommandMixin.__init__(self, callback=callback, parent_cog=parent_cog)
         # self.children: Dict[str, SlashApplicationSubcommand] = {}
@@ -1479,11 +1485,16 @@ class UserApplicationCommand(BaseApplicationCommand):
             callback: Callable = MISSING,
             guild_ids: Iterable[int] = MISSING,
             parent_cog: Optional[ClientCog] = None,
-            force_global: bool = False
+            force_global: bool = False,
+            default_member_permissions: Optional[Permissions] = None,
+            dm_permission: bool = True,
+            permissions: Optional[dict[int, CommandPermission]] = None,
     ):
         super().__init__(name=name, description="", callback=callback,
                          cmd_type=ApplicationCommandType.user, guild_ids=guild_ids,
-                         parent_cog=parent_cog, force_global=force_global)
+                         parent_cog=parent_cog, force_global=force_global,
+                         default_member_permissions=default_member_permissions,
+                         dm_permission=dm_permission, permissions=permissions)
 
     async def call_from_interaction(self, interaction: Interaction):
         await self.call(self._state, interaction)
@@ -1506,11 +1517,16 @@ class MessageApplicationCommand(BaseApplicationCommand):
             callback: Callable = MISSING,
             guild_ids: Iterable[int] = MISSING,
             parent_cog: Optional[ClientCog] = None,
-            force_global: bool = False
+            force_global: bool = False,
+            default_member_permissions: Optional[Permissions] = None,
+            dm_permission: bool = True,
+            permissions: Optional[dict[int, CommandPermission]] = None,
     ):
         super().__init__(name=name, description="", callback=callback,
                          cmd_type=ApplicationCommandType.message, guild_ids=guild_ids,
-                         parent_cog=parent_cog, force_global=force_global)
+                         parent_cog=parent_cog, force_global=force_global,
+                         default_member_permissions=default_member_permissions,
+                         dm_permission=dm_permission, permissions=permissions)
 
     async def call_from_interaction(self, interaction: Interaction):
         await self.call(self._state, interaction)
@@ -3302,6 +3318,9 @@ def slash_command(
     description: str = MISSING,
     guild_ids: Iterable[int] = MISSING,
     force_global: bool = False,
+    default_member_permissions: Permissions = None,
+    dm_permission: bool = True,
+    permissions: dict[int, CommandPermission] = None,
 ):
     """Creates a Slash application command from the decorated function.
     Used inside :class:`ClientCog`'s or something that subclasses it.
@@ -3318,6 +3337,13 @@ def slash_command(
     force_global: :class:`bool`
         If True, will force this command to register as a global command, even if `guild_ids` is set. Will still
         register to guilds. Has no effect if `guild_ids` are never set or added to.
+    default_member_permissions: :class:`Permissions`
+        Default permissions for members that do not have a specific permission set.
+    dm_permission: :class:`bool`
+        If ``False``, this command will not be available in DMs. Defaults to Discord's default.
+    permissions: :class:`dict`
+        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each.
+        :class:`Role`, :class:`Member` or :class:`Guild`.
     """
 
     def decorator(func: Callable) -> SlashApplicationCommand:
@@ -3335,6 +3361,9 @@ def slash_command(
             description=description,
             guild_ids=guild_ids,
             force_global=force_global,
+            default_member_permissions=default_member_permissions,
+            dm_permission=dm_permission,
+            permissions=permissions,
         )
         return app_cmd
 
@@ -3345,6 +3374,9 @@ def message_command(
     name: str = MISSING,
     guild_ids: Iterable[int] = MISSING,
     force_global: bool = False,
+    default_member_permissions: Optional[Permissions] = None,
+    dm_permission: bool = True,
+    permissions: Optional[dict[int, CommandPermission]] = None,
 ):
     """Creates a Message context command from the decorated function.
     Used inside :class:`ClientCog`'s or something that subclasses it.
@@ -3358,6 +3390,12 @@ def message_command(
     force_global: :class:`bool`
         If True, will force this command to register as a global command, even if `guild_ids` is set. Will still
         register to guilds. Has no effect if `guild_ids` are never set or added to.
+    default_member_permissions: :class:`Permissions`
+        Default permissions for members that do not have a specific permission set.
+    dm_permission: :class:`bool`
+        If ``False``, this command will not be available in DMs. Defaults to Discord's default.
+    permissions: :class:`dict`
+        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each.
     """
 
     def decorator(func: Callable) -> MessageApplicationCommand:
@@ -3376,6 +3414,9 @@ def message_command(
             name=name,
             guild_ids=guild_ids,
             force_global=force_global,
+            default_member_permissions=default_member_permissions,
+            dm_permission=dm_permission,
+            permissions=permissions,
         )
         return app_cmd
 
@@ -3386,6 +3427,9 @@ def user_command(
     name: str = MISSING,
     guild_ids: Iterable[int] = MISSING,
     force_global: bool = False,
+    default_member_permissions: Optional[Permissions] = None,
+    dm_permission: bool = True,
+    permissions: Optional[dict[int, CommandPermission]] = None,
 ):
     """Creates a User context command from the decorated function.
     Used inside :class:`ClientCog`'s or something that subclasses it.
@@ -3398,6 +3442,12 @@ def user_command(
     force_global: :class:`bool`
         If True, will force this command to register as a global command, even if `guild_ids` is set. Will still
         register to guilds. Has no effect if `guild_ids` are never set or added to.
+    default_member_permissions: :class:`Permissions`
+        Default permissions for members that do not have a specific permission set.
+    dm_permission: :class:`bool`
+        If ``False``, this command will not be available in DMs. Defaults to Discord's default.
+    permissions: :class:`dict`
+        A dictionary of guild IDs to :class:`CommandPermission` objects defining permissions for each.
     """
 
     def decorator(func: Callable) -> UserApplicationCommand:
@@ -3408,6 +3458,9 @@ def user_command(
             name=name,
             guild_ids=guild_ids,
             force_global=force_global,
+            default_member_permissions=default_member_permissions,
+            dm_permission=dm_permission,
+            permissions=permissions,
         )
         return app_cmd
 
