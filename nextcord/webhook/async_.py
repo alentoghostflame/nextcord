@@ -55,7 +55,7 @@ if TYPE_CHECKING:
     from ..embeds import Embed
     from ..file import File
     from ..guild import Guild
-    from ..http import Response
+    from ..http import HTTPClient, Response
     from ..mentions import AllowedMentions
     from ..state import ConnectionState
     from ..types.message import Message as MessagePayload
@@ -95,8 +95,47 @@ class AsyncWebhookAdapter:
             Tuple[Optional[SnowflakeAlias], Optional[str]],
             asyncio.Lock,
         ] = WeakValueDictionary()
+        self._httpclient: HTTPClient | None = (
+            None  # TODO: Totally a hack, don't let this get merged in.
+        )
 
     async def request(
+        self,
+        route: Route,
+        session: aiohttp.ClientSession,
+        *,
+        payload: Optional[Dict[str, Any]] = None,
+        multipart: Optional[List[Dict[str, Any]]] = None,
+        files: Optional[List[File]] = None,
+        reason: Optional[str] = None,
+        auth_token: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Any:
+
+        if self._httpclient is None:
+            raise ValueError("HTTPClient hasn't been set yet, wtf.")
+
+        extra_kwargs = {}
+        if reason is not None:
+            extra_kwargs["reason"] = reason
+
+        if auth_token is not None:
+            extra_kwargs["auth"] = f"Bot {auth_token}"
+
+        if payload is not None:
+            extra_kwargs["json"] = payload
+
+        if params is not None:
+            extra_kwargs["params"] = params
+
+        return await self._httpclient.request(
+            route,
+            files=files,
+            form=multipart,
+            **extra_kwargs,
+        )
+
+    async def old_request(
         self,
         route: Route,
         session: aiohttp.ClientSession,

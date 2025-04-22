@@ -72,7 +72,7 @@ from .ui.view import View
 from .user import ClientUser, User
 from .utils import MISSING
 from .voice_client import VoiceClient
-from .webhook import Webhook
+from .webhook import Webhook, async_
 from .widget import Widget
 
 if TYPE_CHECKING:
@@ -326,6 +326,8 @@ class Client:
             assume_unsync_clock=assume_unsync_clock,
             dispatch=self.dispatch,
         )
+        async_.async_context.get()._httpclient = self.http
+        _log.debug("REMOVE THIS: ASYNC_CONTEXT HTTPCLIENT SET!")
 
         self._handlers: Dict[str, Callable] = {"ready": self._handle_ready}
 
